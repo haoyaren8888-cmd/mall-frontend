@@ -22,6 +22,22 @@ const stock = computed(() => normalizeNumber(product.value?.stock))
 const sales = computed(() => normalizeNumber(product.value?.sales))
 const canBuy = computed(() => product.value?.status === 'ON' && stock.value > 0)
 const quantityMax = computed(() => Math.max(stock.value, 1))
+const selectedAmount = computed(() => formatPrice(normalizeNumber(product.value?.price) * quantity.value))
+const stockTip = computed(() => {
+  if (!product.value) {
+    return ''
+  }
+  if (product.value.status !== 'ON') {
+    return '商品已下架'
+  }
+  if (stock.value <= 0) {
+    return '暂时缺货'
+  }
+  if (stock.value <= 5) {
+    return `库存紧张，还剩 ${stock.value} 件`
+  }
+  return '现货充足'
+})
 
 const formatPrice = value => {
   const price = Number(value)
@@ -46,6 +62,11 @@ const add = async goCart => {
     ElMessage.warning('商品暂无库存')
     return
   }
+  if (quantity.value > stock.value) {
+    quantity.value = stock.value
+    ElMessage.warning('购买数量不能超过库存')
+    return
+  }
   await cartStore.add(product.value, quantity.value)
   ElMessage.success('已加入购物车')
   if (goCart) {
@@ -62,6 +83,7 @@ watch(() => route.params.id, load, { immediate: true })
       <img :src="product.coverImage" :alt="product.name" />
       <div class="detail-info">
         <el-tag v-if="product.status === 'ON'" type="success">在售</el-tag>
+        <el-tag v-else type="danger">已下架</el-tag>
         <h1>{{ product.name }}</h1>
         <p>{{ product.description }}</p>
         <div class="price big">￥{{ formatPrice(product.price) }}</div>
@@ -69,7 +91,9 @@ watch(() => route.params.id, load, { immediate: true })
         <div class="buy-line">
           <span>数量</span>
           <el-input-number v-model="quantity" :min="1" :max="quantityMax" :disabled="!canBuy" />
+          <span class="muted">{{ stockTip }}</span>
         </div>
+        <div class="subtotal">小计 <strong>￥{{ selectedAmount }}</strong></div>
         <div class="actions">
           <el-button :icon="ShoppingCart" :disabled="!canBuy" @click="add(false)">加入购物车</el-button>
           <el-button type="primary" :disabled="!canBuy" @click="add(true)">立即购买</el-button>
@@ -122,6 +146,15 @@ p {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+.subtotal {
+  color: #374151;
+}
+
+.subtotal strong {
+  color: #d0382b;
+  margin-left: 8px;
 }
 
 @media (max-width: 860px) {

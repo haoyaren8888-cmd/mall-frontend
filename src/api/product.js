@@ -3,13 +3,20 @@ import request from './request'
 const normalizeProductParams = (params = {}) => {
   const normalized = { ...params }
 
-  if (typeof normalized.keyword === 'string') {
-    const keyword = normalized.keyword.trim()
-    if (keyword) {
-      normalized.keyword = keyword
-    } else {
-      delete normalized.keyword
+  Object.keys(normalized).forEach(key => {
+    if (typeof normalized[key] !== 'string') {
+      return
     }
+    const value = normalized[key].trim()
+    if (value) {
+      normalized[key] = value
+    } else {
+      delete normalized[key]
+    }
+  })
+
+  if (!normalized.sort) {
+    delete normalized.sort
   }
 
   if (

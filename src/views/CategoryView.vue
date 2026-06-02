@@ -13,10 +13,18 @@ const categoryStore = useCategoryStore()
 const cartStore = useCartStore()
 const products = ref([])
 const keyword = ref('')
+const sort = ref('newest')
 const page = ref(1)
 const pageSize = 8
 const total = ref(0)
 const loading = ref(false)
+
+const sortOptions = [
+  { label: '最新上架', value: 'newest' },
+  { label: '价格从低到高', value: 'priceAsc' },
+  { label: '价格从高到低', value: 'priceDesc' },
+  { label: '销量优先', value: 'salesDesc' }
+]
 
 const activeMenu = computed(() => route.params.id || 'all')
 
@@ -32,7 +40,8 @@ const loadProducts = async () => {
       page: page.value,
       size: pageSize,
       categoryId: activeCategory(),
-      keyword: keyword.value
+      keyword: keyword.value,
+      sort: sort.value
     })
     products.value = result?.records || []
     total.value = Number(result?.total || 0)
@@ -45,6 +54,11 @@ const loadProducts = async () => {
 }
 
 const searchProducts = () => {
+  page.value = 1
+  loadProducts()
+}
+
+const changeSort = () => {
   page.value = 1
   loadProducts()
 }
@@ -93,6 +107,9 @@ onMounted(async () => {
       <div class="toolbar">
         <h2 class="section-title">商品列表</h2>
         <div class="search-box">
+          <el-select v-model="sort" class="sort-select" @change="changeSort">
+            <el-option v-for="option in sortOptions" :key="option.value" :label="option.label" :value="option.value" />
+          </el-select>
           <el-input v-model="keyword" placeholder="输入商品名称" clearable @clear="searchProducts" @keyup.enter="searchProducts" />
           <el-button type="primary" @click="searchProducts">查询</el-button>
         </div>
@@ -138,6 +155,11 @@ onMounted(async () => {
 .search-box {
   display: flex;
   gap: 10px;
+}
+
+.sort-select {
+  width: 142px;
+  flex: 0 0 142px;
 }
 
 .pagination {
