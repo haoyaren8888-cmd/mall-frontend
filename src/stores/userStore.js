@@ -12,6 +12,10 @@ export const useUserStore = defineStore('userStore', {
     isAdmin: state => state.user?.role === 'ADMIN'
   },
   actions: {
+    clearSession() {
+      this.user = null
+      this.loaded = true
+    },
     async register(data) {
       return authApi.register(data)
     },
@@ -32,10 +36,15 @@ export const useUserStore = defineStore('userStore', {
       }
       return this.user
     },
+    async ensureLoaded() {
+      if (!this.loaded) {
+        await this.fetchMe()
+      }
+      return this.user
+    },
     async logout() {
       await authApi.logout()
-      this.user = null
-      this.loaded = true
+      this.clearSession()
     }
   }
 })

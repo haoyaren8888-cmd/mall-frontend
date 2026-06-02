@@ -5,8 +5,8 @@ import AdminLayout from '@/layouts/AdminLayout.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
-  { path: '/login', component: () => import('@/views/LoginView.vue') },
-  { path: '/register', component: () => import('@/views/RegisterView.vue') },
+  { path: '/login', component: () => import('@/views/LoginView.vue'), meta: { guestOnly: true } },
+  { path: '/register', component: () => import('@/views/RegisterView.vue'), meta: { guestOnly: true } },
   {
     path: '/',
     component: UserLayout,
@@ -41,16 +41,43 @@ const router = createRouter({
   routes
 })
 
+const safeRedirect = redirect => {
+  if (typeof redirect !== 'string') {
+    return null
+  }
+  if (!redirect.startsWith('/') || redirect.startsWith('//')) {
+    return null
+  }
+  return redirect
+}
+
+const homeByRole = userStore => (userStore.isAdmin ? '/admin/dashboard' : '/home')
+
 router.beforeEach(async to => {
   const userStore = useUserStore()
-  if (!userStore.loaded) {
-    await userStore.fetchMe()
+
+  await userStore.ensureLoaded()
+
+  if (to.meta.guestOnly && userStore.isLogin) {
+    return {
+      path: safeRedirect(to.query.redirect) || homeByRole(userStore),
+      replace: true
+    }
   }
+
   if (to.meta.requiresAuth && !userStore.isLogin) {
-    return { path: '/login', query: { redirect: to.fullPath } }
+    return {
+      path: '/login',
+      query: { redirect: to.fullPath },
+      replace: true
+    }
   }
+
   if (to.meta.requiresAdmin && !userStore.isAdmin) {
-    return '/home'
+    return {
+      path: '/home',
+      replace: true
+    }
   }
 })
 
