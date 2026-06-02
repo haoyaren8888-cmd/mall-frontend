@@ -1,23 +1,42 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getOrderDetail } from '@/api/order'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { cancelOrder, getOrderDetail } from '@/api/order'
 
 const route = useRoute()
 const router = useRouter()
 const order = ref(null)
 
-const statusText = {
-  PENDING_PAY: '待支付',
-  PAID: '已支付',
-  SHIPPED: '已发货',
-  FINISHED: '已完成',
-  CANCELED: '已取消'
+const statusMeta = {
+  PENDING_PAY: { label: '待支付', type: 'warning', alertType: 'warning', tip: '订单已提交，完成支付后后台才能继续发货。' },
+  PAID: { label: '已支付', type: 'success', alertType: 'success', tip: '订单已付款，等待管理员在后台发货。' },
+  SHIPPED: { label: '已发货', type: 'primary', alertType: 'info', tip: '订单已由后台发货，等待后续确认完成。' },
+  FINISHED: { label: '已完成', type: 'info', alertType: 'info', tip: '订单已经完成。' },
+  CANCELED: { label: '已取消', type: 'danger', alertType: 'error', tip: '订单已经取消，不能继续支付。' }
 }
 
-onMounted(async () => {
-  order.value = await getOrderDetail(route.params.orderNo)
+const currentStatus = computed(() => statusMeta[order.value?.status] || {
+  label: order.value?.status || '未知状态',
+  type: 'info',
+  alertType: 'info',
+  tip: '订单状态待确认。'
 })
+const canPay = computed(() => order.value?.status === 'PENDING_PAY')
+const canCancel = computed(() => order.value?.status === 'PENDING_PAY')
+
+const load = async () => {
+  order.value = await getOrderDetail(route.params.orderNo)
+}
+
+const cancel = async () => {
+  await ElMessageBox.confirm('确认取消这个待支付订单吗？', '取消订单', { type: 'warning' })
+  await cancelOrder(order.value.orderNo)
+  ElMessage.success('订单已取消')
+  await load()
+}
+
+onMounted(load)
 </script>
 
 <template>
@@ -27,14 +46,15 @@ onMounted(async () => {
         <h2>订单详情</h2>
         <p class="muted">订单号：{{ order.orderNo }}</p>
         <p class="muted">{{ order.receiverSnapshot }}</p>
+        <el-alert class="status-alert" :title="currentStatus.tip" :type="currentStatus.alertType" :closable="false" show-icon />
       </div>
-      <div>
-        <el-tag size="large">{{ statusText[order.status] || order.status }}</el-tag>
+      <div class="summary">
+        <el-tag size="large" :type="currentStatus.type">{{ currentStatus.label }}</el-tag>
         <div class="price amount">￥{{ Number(order.totalAmount).toFixed(2) }}</div>
       </div>
     </section>
     <section class="panel items">
-      <div v-for="item in order.items" :key="item.productId" class="order-item">
+      <div v-for="item in order.items || []" :key="item.productId" class="order-item">
         <img :src="item.productImage" :alt="item.productName" />
         <span>{{ item.productName }}</span>
         <span>x {{ item.quantity }}</span>
@@ -43,7 +63,8 @@ onMounted(async () => {
     </section>
     <div class="actions">
       <el-button @click="router.push('/orders')">返回订单列表</el-button>
-      <el-button v-if="order.status === 'PENDING_PAY'" type="primary" @click="router.push(`/pay/${order.orderNo}`)">去支付</el-button>
+      <el-button v-if="canCancel" type="danger" plain @click="cancel">取消订单</el-button>
+      <el-button v-if="canPay" type="primary" @click="router.push(`/pay/${order.orderNo}`)">去支付</el-button>
     </div>
   </div>
 </template>
@@ -59,6 +80,16 @@ onMounted(async () => {
 
 h2 {
   margin: 0 0 8px;
+}
+
+.status-alert {
+  max-width: 560px;
+  margin-top: 14px;
+}
+
+.summary {
+  min-width: 150px;
+  text-align: right;
 }
 
 .amount {
@@ -87,6 +118,23 @@ img {
 }
 
 .actions {
+  display: flex;
+  gap: 10px;
   margin-top: 18px;
+}
+
+@media (max-width: 720px) {
+  .order-head,
+  .actions {
+    flex-direction: column;
+  }
+
+  .summary {
+    text-align: left;
+  }
+
+  .order-item {
+    grid-template-columns: 72px 1fr;
+  }
 }
 </style>
