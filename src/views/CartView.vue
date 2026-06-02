@@ -11,7 +11,14 @@ const cartStore = useCartStore()
 const userStore = useUserStore()
 
 const selectedItems = computed(() => cartStore.displayItems.filter(item => item.checked))
+const selectedInvalidItems = computed(() => selectedItems.value.filter(item => Number(item.quantity || 0) > Number(item.stock || 0)))
+const allChecked = computed(() => cartStore.displayItems.length > 0 && cartStore.displayItems.every(item => item.checked))
+const partialChecked = computed(() => selectedItems.value.length > 0 && !allChecked.value)
 const total = computed(() => selectedItems.value.reduce((sum, item) => sum + Number(item.subtotal || item.price * item.quantity), 0))
+
+const toggleAll = async checked => {
+  await cartStore.checkAll(checked)
+}
 
 const checkout = () => {
   if (!cartStore.displayItems.length) {
@@ -20,6 +27,10 @@ const checkout = () => {
   }
   if (!selectedItems.value.length) {
     ElMessage.warning('请先勾选商品')
+    return
+  }
+  if (selectedInvalidItems.value.length) {
+    ElMessage.warning('已选商品库存不足，请调整数量')
     return
   }
   if (!userStore.isLogin) {
@@ -49,7 +60,17 @@ onMounted(cartStore.load)
       <el-empty v-if="!cartStore.displayItems.length" description="购物车为空" />
     </section>
     <section class="cart-summary panel">
-      <span>已选 {{ selectedItems.length }} 件</span>
+      <div class="summary-left">
+        <el-checkbox
+          :model-value="allChecked"
+          :indeterminate="partialChecked"
+          :disabled="!cartStore.displayItems.length"
+          @change="toggleAll"
+        >
+          全选
+        </el-checkbox>
+        <span>已选 {{ selectedItems.length }} 件</span>
+      </div>
       <strong>合计：<span class="price">￥{{ total.toFixed(2) }}</span></strong>
       <el-button type="primary" size="large" @click="checkout">去结算</el-button>
     </section>
@@ -65,9 +86,15 @@ onMounted(cartStore.load)
   margin-top: 16px;
   padding: 18px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   gap: 22px;
+}
+
+.summary-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
 }
 
 @media (max-width: 720px) {

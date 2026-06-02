@@ -16,6 +16,7 @@ const total = computed(() => items.value.reduce((sum, item) => {
   const subtotal = item.subtotal ?? Number(item.price || 0) * Number(item.quantity || 0)
   return sum + Number(subtotal || 0)
 }, 0))
+const selectedAddress = computed(() => addresses.value.find(item => item.id === selectedAddressId.value))
 
 const load = async () => {
   await cartStore.load()
@@ -55,13 +56,26 @@ onMounted(load)
         <el-button @click="router.push('/address')">管理地址</el-button>
       </div>
       <el-radio-group v-model="selectedAddressId" class="address-list">
-        <el-radio v-for="address in addresses" :key="address.id" :value="address.id" class="address-radio">
-          {{ address.receiverName }} {{ address.receiverPhone }} ·
-          {{ address.province }}{{ address.city }}{{ address.district }}{{ address.detail }}
-          <el-tag v-if="address.defaultAddress" size="small">默认</el-tag>
+        <el-radio
+          v-for="address in addresses"
+          :key="address.id"
+          :value="address.id"
+          class="address-radio"
+          :class="{ active: selectedAddressId === address.id }"
+        >
+          <span class="receiver">
+            {{ address.receiverName }} {{ address.receiverPhone }}
+            <el-tag v-if="address.defaultAddress" size="small">默认</el-tag>
+          </span>
+          <span class="address-text">
+            {{ address.province }}{{ address.city }}{{ address.district }}{{ address.detail }}
+          </span>
         </el-radio>
       </el-radio-group>
       <el-empty v-if="!addresses.length" description="还没有收货地址" />
+      <div v-else-if="selectedAddress" class="address-note">
+        将配送至：{{ selectedAddress.province }}{{ selectedAddress.city }}{{ selectedAddress.district }}{{ selectedAddress.detail }}
+      </div>
     </section>
 
     <section class="panel block">
@@ -101,8 +115,41 @@ onMounted(load)
 }
 
 .address-radio {
-  min-height: 46px;
+  min-height: 62px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  align-items: flex-start;
+  margin-right: 0;
+}
+
+.address-radio.active {
+  border-color: #409eff;
+  background: #f5f9ff;
+}
+
+.address-radio :deep(.el-radio__label) {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  line-height: 1.5;
+}
+
+.receiver {
+  display: flex;
   align-items: center;
+  gap: 8px;
+  color: #111827;
+  font-weight: 700;
+}
+
+.address-text,
+.address-note {
+  color: #4b5563;
+}
+
+.address-note {
+  margin-top: 12px;
 }
 
 .checkout-item {
