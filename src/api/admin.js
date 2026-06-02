@@ -1,0 +1,15 @@
+import request from './request'
+
+export const getAdminStats = () => request.get('/admin/dashboard/stats')
+export const getAdminProducts = params => request.get('/admin/products', { params })
+export const createAdminProduct = data => request.post('/admin/products', data)
+export const updateAdminProduct = (id, data) => request.put(`/admin/products/${id}`, data)
+export const deleteAdminProduct = id => request.delete(`/admin/products/${id}`)
+export const onProduct = id => request.put(`/admin/products/${id}/on`)
+export const offProduct = id => request.put(`/admin/products/${id}/off`)
+export const getAdminCategories = () => request.get('/admin/categories')
+export const createAdminCategory = data => request.post('/admin/categories', data)
+export const updateAdminCategory = (id, data) => request.put(`/admin/categories/${id}`, data)
+export const deleteAdminCategory = id => request.delete(`/admin/categories/${id}`)
+export const getAdminOrders = params => request.get('/admin/orders', { params })
+export const shipOrder = orderNo => request.put(`/admin/orders/${orderNo}/ship`)
