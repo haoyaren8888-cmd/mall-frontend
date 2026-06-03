@@ -9,18 +9,18 @@ const router = useRouter()
 const order = ref(null)
 
 const statusMeta = {
-  PENDING_PAY: { label: '待支付', type: 'warning', alertType: 'warning', tip: '订单已提交，完成支付后后台才能继续发货。' },
-  PAID: { label: '已支付', type: 'success', alertType: 'success', tip: '订单已付款，等待管理员在后台发货。' },
-  SHIPPED: { label: '已发货', type: 'primary', alertType: 'info', tip: '订单已由后台发货，等待后续确认完成。' },
-  FINISHED: { label: '已完成', type: 'info', alertType: 'info', tip: '订单已经完成。' },
-  CANCELED: { label: '已取消', type: 'danger', alertType: 'error', tip: '订单已经取消，不能继续支付。' }
+  PENDING_PAY: { label: '待支付', type: 'warning', alertType: 'warning', tip: '交易已提交，完成支付后管理员会继续处理。' },
+  PAID: { label: '已支付', type: 'success', alertType: 'success', tip: '交易已付款，等待管理员确认交付。' },
+  SHIPPED: { label: '已交付', type: 'primary', alertType: 'info', tip: '后台已标记交付，等待后续确认完成。' },
+  FINISHED: { label: '已完成', type: 'info', alertType: 'info', tip: '交易已经完成。' },
+  CANCELED: { label: '已取消', type: 'danger', alertType: 'error', tip: '交易已经取消，不能继续支付。' }
 }
 
 const currentStatus = computed(() => statusMeta[order.value?.status] || {
   label: order.value?.status || '未知状态',
   type: 'info',
   alertType: 'info',
-  tip: '订单状态待确认。'
+  tip: '交易状态待确认。'
 })
 const canPay = computed(() => order.value?.status === 'PENDING_PAY')
 const canCancel = computed(() => order.value?.status === 'PENDING_PAY')
@@ -30,9 +30,9 @@ const load = async () => {
 }
 
 const cancel = async () => {
-  await ElMessageBox.confirm('确认取消这个待支付订单吗？', '取消订单', { type: 'warning' })
+  await ElMessageBox.confirm('确认取消这个待支付交易吗？', '取消交易', { type: 'warning' })
   await cancelOrder(order.value.orderNo)
-  ElMessage.success('订单已取消')
+  ElMessage.success('交易已取消')
   await load()
 }
 
@@ -43,14 +43,14 @@ onMounted(load)
   <div class="page" v-if="order">
     <section class="panel order-head">
       <div>
-        <h2>订单详情</h2>
-        <p class="muted">订单号：{{ order.orderNo }}</p>
+        <h2>交易详情</h2>
+        <p class="muted">交易单号：{{ order.orderNo }}</p>
         <p class="muted">{{ order.receiverSnapshot }}</p>
         <el-alert class="status-alert" :title="currentStatus.tip" :type="currentStatus.alertType" :closable="false" show-icon />
       </div>
       <div class="summary">
         <el-tag size="large" :type="currentStatus.type">{{ currentStatus.label }}</el-tag>
-        <div class="price amount">￥{{ Number(order.totalAmount).toFixed(2) }}</div>
+        <div class="price amount">¥{{ Number(order.totalAmount).toFixed(2) }}</div>
       </div>
     </section>
     <section class="panel items">
@@ -58,12 +58,12 @@ onMounted(load)
         <img :src="item.productImage" :alt="item.productName" />
         <span>{{ item.productName }}</span>
         <span>x {{ item.quantity }}</span>
-        <span class="price">￥{{ Number(item.subtotal).toFixed(2) }}</span>
+        <span class="price">¥{{ Number(item.subtotal).toFixed(2) }}</span>
       </div>
     </section>
     <div class="actions">
-      <el-button @click="router.push('/orders')">返回订单列表</el-button>
-      <el-button v-if="canCancel" type="danger" plain @click="cancel">取消订单</el-button>
+      <el-button @click="router.push('/orders')">返回交易记录</el-button>
+      <el-button v-if="canCancel" type="danger" plain @click="cancel">取消交易</el-button>
       <el-button v-if="canPay" type="primary" @click="router.push(`/pay/${order.orderNo}`)">去支付</el-button>
     </div>
   </div>

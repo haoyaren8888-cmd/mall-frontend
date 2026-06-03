@@ -21,7 +21,7 @@ const selectedAddress = computed(() => addresses.value.find(item => item.id === 
 const load = async () => {
   await cartStore.load()
   if (!items.value.length) {
-    ElMessage.warning('请先选择要结算的商品')
+    ElMessage.warning('请先从意向清单选择要交易的闲置')
     router.replace('/cart')
     return
   }
@@ -31,16 +31,16 @@ const load = async () => {
 
 const submit = async () => {
   if (!items.value.length) {
-    ElMessage.warning('请先选择要结算的商品')
+    ElMessage.warning('请先从意向清单选择要交易的闲置')
     router.replace('/cart')
     return
   }
   if (!selectedAddressId.value) {
-    ElMessage.warning('请先选择收货地址')
+    ElMessage.warning('请先选择联系地址')
     return
   }
   const order = await createOrder({ addressId: selectedAddressId.value })
-  ElMessage.success('订单已创建')
+  ElMessage.success('交易订单已创建')
   await cartStore.load()
   router.push(`/pay/${order.orderNo}`)
 }
@@ -52,7 +52,7 @@ onMounted(load)
   <div class="page checkout-page">
     <section class="panel block">
       <div class="toolbar">
-        <h2 class="section-title">确认收货地址</h2>
+        <h2 class="section-title">确认联系地址</h2>
         <el-button @click="router.push('/address')">管理地址</el-button>
       </div>
       <el-radio-group v-model="selectedAddressId" class="address-list">
@@ -72,25 +72,25 @@ onMounted(load)
           </span>
         </el-radio>
       </el-radio-group>
-      <el-empty v-if="!addresses.length" description="还没有收货地址" />
+      <el-empty v-if="!addresses.length" description="还没有联系地址" />
       <div v-else-if="selectedAddress" class="address-note">
-        将配送至：{{ selectedAddress.province }}{{ selectedAddress.city }}{{ selectedAddress.district }}{{ selectedAddress.detail }}
+        校内联系地址：{{ selectedAddress.province }}{{ selectedAddress.city }}{{ selectedAddress.district }}{{ selectedAddress.detail }}
       </div>
     </section>
 
     <section class="panel block">
-      <h2 class="section-title">确认商品</h2>
+      <h2 class="section-title">确认闲置商品</h2>
       <div v-for="item in items" :key="item.id" class="checkout-item">
         <img :src="item.productImage" :alt="item.productName" />
         <span>{{ item.productName }}</span>
         <span>x {{ item.quantity }}</span>
-        <strong class="price">￥{{ Number(item.subtotal ?? item.price * item.quantity).toFixed(2) }}</strong>
+        <strong class="price">¥{{ Number(item.subtotal ?? item.price * item.quantity).toFixed(2) }}</strong>
       </div>
     </section>
 
     <section class="panel submit-bar">
-      <strong>应付金额：<span class="price">￥{{ total.toFixed(2) }}</span></strong>
-      <el-button type="primary" size="large" @click="submit">提交订单</el-button>
+      <strong>交易金额：<span class="price">¥{{ total.toFixed(2) }}</span></strong>
+      <el-button type="primary" size="large" @click="submit">提交交易订单</el-button>
     </section>
   </div>
 </template>

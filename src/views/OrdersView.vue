@@ -10,11 +10,11 @@ const page = ref(1)
 const total = ref(0)
 
 const statusMap = {
-  PENDING_PAY: { label: '待支付', type: 'warning', tip: '等待买家完成模拟支付' },
-  PAID: { label: '已支付', type: 'success', tip: '订单已付款，等待后台发货' },
-  SHIPPED: { label: '已发货', type: 'primary', tip: '后台已发货，等待确认完成' },
-  FINISHED: { label: '已完成', type: 'info', tip: '订单流程已结束' },
-  CANCELED: { label: '已取消', type: 'danger', tip: '订单已取消' }
+  PENDING_PAY: { label: '待支付', type: 'warning', tip: '等待完成模拟支付' },
+  PAID: { label: '已支付', type: 'success', tip: '等待管理员确认交付' },
+  SHIPPED: { label: '已交付', type: 'primary', tip: '后台已标记交付' },
+  FINISHED: { label: '已完成', type: 'info', tip: '交易流程已结束' },
+  CANCELED: { label: '已取消', type: 'danger', tip: '交易已取消' }
 }
 
 const statusOf = status => statusMap[status] || { label: status, type: 'info', tip: '状态待确认' }
@@ -26,9 +26,9 @@ const load = async () => {
 }
 
 const cancel = async order => {
-  await ElMessageBox.confirm('确认取消这个待支付订单吗？', '取消订单', { type: 'warning' })
+  await ElMessageBox.confirm('确认取消这个待支付交易吗？', '取消交易', { type: 'warning' })
   await cancelOrder(order.orderNo)
-  ElMessage.success('订单已取消')
+  ElMessage.success('交易已取消')
   await load()
 }
 
@@ -37,13 +37,13 @@ onMounted(load)
 
 <template>
   <div class="page">
-    <h2 class="section-title">我的订单</h2>
+    <h2 class="section-title">交易记录</h2>
     <section class="panel">
-      <el-table :data="orders" empty-text="暂无订单">
-        <el-table-column prop="orderNo" label="订单号" min-width="180" />
+      <el-table :data="orders" empty-text="暂无交易记录">
+        <el-table-column prop="orderNo" label="交易单号" min-width="180" />
         <el-table-column label="金额" width="120">
           <template #default="{ row }">
-            <span class="price">￥{{ Number(row.totalAmount).toFixed(2) }}</span>
+            <span class="price">¥{{ Number(row.totalAmount).toFixed(2) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="180">
@@ -56,7 +56,7 @@ onMounted(load)
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="createdAt" label="下单时间" width="180" />
+        <el-table-column prop="createdAt" label="提交时间" width="180" />
         <el-table-column label="操作" width="230">
           <template #default="{ row }">
             <div class="actions">
