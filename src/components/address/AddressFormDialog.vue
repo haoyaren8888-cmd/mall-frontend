@@ -23,7 +23,7 @@ const form = reactive({
 })
 
 const rules = {
-  receiverName: [{ required: true, message: '请输入收货人', trigger: 'blur' }],
+  receiverName: [{ required: true, message: '请输入联系人', trigger: 'blur' }],
   receiverPhone: [
     { required: true, message: '请输入手机号', trigger: 'blur' },
     { pattern: /^1\d{10}$/, message: '请输入 11 位手机号', trigger: 'blur' }
@@ -31,7 +31,7 @@ const rules = {
   province: [{ required: true, message: '请输入省份', trigger: 'blur' }],
   city: [{ required: true, message: '请输入城市', trigger: 'blur' }],
   district: [{ required: true, message: '请输入区县', trigger: 'blur' }],
-  detail: [{ required: true, message: '请输入详细地址', trigger: 'blur' }]
+  detail: [{ required: true, message: '请输入校内详细地址', trigger: 'blur' }]
 }
 
 const fillForm = address => {
@@ -69,12 +69,12 @@ const submit = () => {
 <template>
   <el-dialog
     :model-value="modelValue"
-    :title="address ? '编辑地址' : '新增地址'"
+    :title="address ? '编辑联系地址' : '新增联系地址'"
     width="520px"
     @update:model-value="value => emit('update:modelValue', value)"
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
-      <el-form-item label="收货人" prop="receiverName">
+      <el-form-item label="联系人" prop="receiverName">
         <el-input v-model="form.receiverName" />
       </el-form-item>
       <el-form-item label="手机号" prop="receiverPhone">

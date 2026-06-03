@@ -39,7 +39,7 @@ const logout = async () => {
         <el-menu-item index="/publish">发布闲置</el-menu-item>
         <el-menu-item index="/my-products">我的发布</el-menu-item>
         <el-menu-item index="/orders">交易记录</el-menu-item>
-        <el-menu-item index="/address">收货地址</el-menu-item>
+        <el-menu-item index="/address">联系地址</el-menu-item>
       </el-menu>
       <div class="header-actions">
         <el-button type="primary" :icon="Plus" @click="router.push('/publish')">发布闲置</el-button>

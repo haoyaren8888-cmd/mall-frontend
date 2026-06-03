@@ -34,7 +34,7 @@ const save = async form => {
 }
 
 const remove = async address => {
-  await ElMessageBox.confirm('确认删除这个地址吗？', '提示')
+  await ElMessageBox.confirm('确认删除这个联系地址吗？', '提示')
   await deleteAddress(address.id)
   await load()
 }
@@ -50,8 +50,8 @@ onMounted(load)
 <template>
   <div class="page">
     <div class="toolbar">
-      <h2 class="section-title">收货地址</h2>
-      <el-button type="primary" @click="openCreate">新增地址</el-button>
+      <h2 class="section-title">联系地址</h2>
+      <el-button type="primary" @click="openCreate">新增联系地址</el-button>
     </div>
     <section class="address-grid">
       <article v-for="address in addresses" :key="address.id" class="panel address-card">
@@ -68,7 +68,7 @@ onMounted(load)
         </div>
       </article>
     </section>
-    <el-empty v-if="!addresses.length" description="还没有收货地址" />
+    <el-empty v-if="!addresses.length" description="还没有联系地址" />
     <AddressFormDialog v-model="dialogVisible" :address="editing" @submit="save" />
   </div>
 </template>
