@@ -37,6 +37,7 @@ const logout = async () => {
         <el-menu-item index="/home">首页</el-menu-item>
         <el-menu-item index="/category">全部商品</el-menu-item>
         <el-menu-item index="/publish">发布闲置</el-menu-item>
+        <el-menu-item index="/my-products">我的发布</el-menu-item>
         <el-menu-item index="/orders">我的订单</el-menu-item>
         <el-menu-item index="/address">收货地址</el-menu-item>
       </el-menu>

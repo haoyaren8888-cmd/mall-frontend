@@ -52,7 +52,7 @@ const submit = async () => {
       stock: form.stock || 1
     })
     ElMessage.success('发布成功，等待管理员审核')
-    router.push('/category')
+    router.push('/my-products')
   } finally {
     saving.value = false
   }
