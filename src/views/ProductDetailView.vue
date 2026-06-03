@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ShoppingCart } from '@element-plus/icons-vue'
+import { ChatLineRound, Star } from '@element-plus/icons-vue'
 import { getProductDetail } from '@/api/product'
 import { useCartStore } from '@/stores/cartStore'
 
@@ -10,38 +10,25 @@ const route = useRoute()
 const router = useRouter()
 const cartStore = useCartStore()
 const product = ref(null)
-const quantity = ref(1)
 const loading = ref(false)
 
-const normalizeNumber = value => {
-  const number = Number(value || 0)
-  return Number.isFinite(number) ? number : 0
-}
-
-const stock = computed(() => normalizeNumber(product.value?.stock))
-const sales = computed(() => normalizeNumber(product.value?.sales))
-const canBuy = computed(() => product.value?.status === 'ON' && stock.value > 0)
-const quantityMax = computed(() => Math.max(stock.value, 1))
-const selectedAmount = computed(() => formatPrice(normalizeNumber(product.value?.price) * quantity.value))
-const stockTip = computed(() => {
-  if (!product.value) {
-    return ''
-  }
-  if (product.value.status !== 'ON') {
-    return '商品已下架'
-  }
-  if (stock.value <= 0) {
-    return '暂时缺货'
-  }
-  if (stock.value <= 5) {
-    return `库存紧张，还剩 ${stock.value} 件`
-  }
-  return '现货充足'
-})
+const canContact = computed(() => product.value?.status === 'ON' && product.value?.itemStatus === 'ON_SALE')
 
 const formatPrice = value => {
   const price = Number(value)
   return Number.isFinite(price) ? price.toFixed(2) : '0.00'
+}
+
+const saveIntent = async goCart => {
+  if (!canContact.value) {
+    ElMessage.warning('这件闲置暂时不能交易')
+    return
+  }
+  await cartStore.add(product.value, 1)
+  ElMessage.success('已加入意向清单')
+  if (goCart) {
+    router.push('/cart')
+  }
 }
 
 const load = async id => {
@@ -49,28 +36,10 @@ const load = async id => {
   product.value = null
   try {
     product.value = await getProductDetail(id)
-    quantity.value = 1
   } catch {
     product.value = null
   } finally {
     loading.value = false
-  }
-}
-
-const add = async goCart => {
-  if (!canBuy.value) {
-    ElMessage.warning('商品暂无库存')
-    return
-  }
-  if (quantity.value > stock.value) {
-    quantity.value = stock.value
-    ElMessage.warning('购买数量不能超过库存')
-    return
-  }
-  await cartStore.add(product.value, quantity.value)
-  ElMessage.success('已加入购物车')
-  if (goCart) {
-    router.push('/cart')
   }
 }
 
@@ -82,25 +51,45 @@ watch(() => route.params.id, load, { immediate: true })
     <section v-if="product" class="detail-panel panel">
       <img :src="product.coverImage" :alt="product.name" />
       <div class="detail-info">
-        <el-tag v-if="product.status === 'ON'" type="success">在售</el-tag>
-        <el-tag v-else type="danger">已下架</el-tag>
+        <div class="tags">
+          <el-tag type="success">{{ product.campus || '校内' }}</el-tag>
+          <el-tag>{{ product.conditionLevel || '成色未填' }}</el-tag>
+          <el-tag v-if="product.auditStatus === 'APPROVED'" type="info">已审核</el-tag>
+        </div>
         <h1>{{ product.name }}</h1>
         <p>{{ product.description }}</p>
-        <div class="price big">￥{{ formatPrice(product.price) }}</div>
-        <div class="muted">销量 {{ sales }} · 库存 {{ stock }}</div>
-        <div class="buy-line">
-          <span>数量</span>
-          <el-input-number v-model="quantity" :min="1" :max="quantityMax" :disabled="!canBuy" />
-          <span class="muted">{{ stockTip }}</span>
+        <div class="price big">¥{{ formatPrice(product.price) }}</div>
+        <div v-if="product.originalPrice" class="original">原价 ¥{{ formatPrice(product.originalPrice) }}</div>
+        <dl class="trade-info">
+          <div>
+            <dt>交易方式</dt>
+            <dd>{{ product.tradeType || '线下面交' }}</dd>
+          </div>
+          <div>
+            <dt>面交地点</dt>
+            <dd>{{ product.tradePlace || '双方协商' }}</dd>
+          </div>
+          <div>
+            <dt>浏览</dt>
+            <dd>{{ product.viewCount || 0 }} 次</dd>
+          </div>
+          <div>
+            <dt>收藏</dt>
+            <dd>{{ product.favoriteCount || 0 }} 人</dd>
+          </div>
+        </dl>
+        <div class="notice">
+          校园闲置交易建议在校内公共区域当面验货，确认成色和配件后再付款。
         </div>
-        <div class="subtotal">小计 <strong>￥{{ selectedAmount }}</strong></div>
         <div class="actions">
-          <el-button :icon="ShoppingCart" :disabled="!canBuy" @click="add(false)">加入购物车</el-button>
-          <el-button type="primary" :disabled="!canBuy" @click="add(true)">立即购买</el-button>
+          <el-button :icon="Star" :disabled="!canContact" @click="saveIntent(false)">加入意向清单</el-button>
+          <el-button type="primary" :icon="ChatLineRound" :disabled="!canContact" @click="saveIntent(true)">
+            去意向清单
+          </el-button>
         </div>
       </div>
     </section>
-    <el-empty v-else-if="!loading" description="商品不存在或已下架" />
+    <el-empty v-else-if="!loading" description="闲置不存在或暂未通过审核" />
   </div>
 </template>
 
@@ -125,6 +114,14 @@ img {
   gap: 18px;
 }
 
+.tags,
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 h1 {
   margin: 0;
   font-size: 30px;
@@ -141,20 +138,44 @@ p {
   font-size: 30px;
 }
 
-.buy-line,
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+.original {
+  width: fit-content;
+  color: #9ca3af;
+  text-decoration: line-through;
 }
 
-.subtotal {
-  color: #374151;
+.trade-info {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
 }
 
-.subtotal strong {
-  color: #d0382b;
-  margin-left: 8px;
+.trade-info div {
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+dt {
+  color: #64748b;
+  font-size: 13px;
+}
+
+dd {
+  margin: 6px 0 0;
+  color: #111827;
+  font-weight: 700;
+}
+
+.notice {
+  padding: 12px 14px;
+  color: #475569;
+  line-height: 1.6;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
 }
 
 @media (max-width: 860px) {
@@ -164,6 +185,12 @@ p {
 
   img {
     height: 320px;
+  }
+}
+
+@media (max-width: 560px) {
+  .trade-info {
+    grid-template-columns: 1fr;
   }
 }
 </style>
