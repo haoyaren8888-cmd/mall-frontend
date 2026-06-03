@@ -1,5 +1,5 @@
 <script setup>
-import { ShoppingCart } from '@element-plus/icons-vue'
+import { Star } from '@element-plus/icons-vue'
 
 defineProps({
   product: {
@@ -19,7 +19,7 @@ const stockCount = product => {
   const stock = Number(product.stock || 0)
   return Number.isFinite(stock) ? stock : 0
 }
-const hasStock = product => stockCount(product) > 0
+const hasStock = product => stockCount(product) > 0 && product.itemStatus !== 'OFF_SHELF'
 </script>
 
 <template>
@@ -28,14 +28,19 @@ const hasStock = product => stockCount(product) > 0
       <img :src="product.coverImage" :alt="product.name" />
     </router-link>
     <div class="product-body">
+      <div class="tags">
+        <el-tag size="small" type="success">{{ product.campus || '校内' }}</el-tag>
+        <el-tag size="small">{{ product.conditionLevel || '成色未填' }}</el-tag>
+      </div>
       <router-link :to="`/product/${product.id}`" class="name">{{ product.name }}</router-link>
       <p class="desc">{{ product.description }}</p>
+      <div class="place">{{ product.tradePlace || '面交地点待沟通' }}</div>
       <div class="meta">
-        <span class="price">￥{{ formatPrice(product.price) }}</span>
-        <span class="muted">库存 {{ stockCount(product) }}</span>
+        <span class="price">¥{{ formatPrice(product.price) }}</span>
+        <span v-if="product.originalPrice" class="original">原价 ¥{{ formatPrice(product.originalPrice) }}</span>
       </div>
-      <el-button type="primary" :icon="ShoppingCart" :disabled="!hasStock(product)" @click="$emit('add', product)">
-        {{ hasStock(product) ? '加入购物车' : '暂无库存' }}
+      <el-button type="primary" :icon="Star" :disabled="!hasStock(product)" @click="$emit('add', product)">
+        {{ hasStock(product) ? '加入意向清单' : '已下架' }}
       </el-button>
     </div>
   </article>
@@ -46,7 +51,7 @@ const hasStock = product => stockCount(product) > 0
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 360px;
+  min-height: 390px;
 }
 
 .image-wrap {
@@ -70,6 +75,12 @@ img {
   padding: 14px;
 }
 
+.tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .name {
   font-size: 16px;
   font-weight: 700;
@@ -83,10 +94,22 @@ img {
   font-size: 14px;
 }
 
+.place {
+  color: #475569;
+  font-size: 13px;
+}
+
 .meta {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
+  gap: 8px;
   margin-top: auto;
+}
+
+.original {
+  color: #9ca3af;
+  font-size: 12px;
+  text-decoration: line-through;
 }
 </style>

@@ -15,7 +15,7 @@ defineEmits(['add'])
   <div v-if="products.length" class="product-grid">
     <ProductCard v-for="product in products" :key="product.id" :product="product" @add="$emit('add', product)" />
   </div>
-  <el-empty v-else description="暂时没有商品" />
+  <el-empty v-else description="暂时没有合适的闲置" />
 </template>
 
 <style scoped>
