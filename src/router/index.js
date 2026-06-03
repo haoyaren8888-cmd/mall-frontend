@@ -14,6 +14,7 @@ const routes = [
       { path: 'home', component: () => import('@/views/HomeView.vue') },
       { path: 'category/:id?', component: () => import('@/views/CategoryView.vue') },
       { path: 'product/:id', component: () => import('@/views/ProductDetailView.vue') },
+      { path: 'publish', component: () => import('@/views/PublishIdleView.vue'), meta: { requiresAuth: true } },
       { path: 'cart', component: () => import('@/views/CartView.vue') },
       { path: 'checkout', component: () => import('@/views/CheckoutView.vue'), meta: { requiresAuth: true } },
       { path: 'pay/:orderNo', component: () => import('@/views/PayView.vue'), meta: { requiresAuth: true } },

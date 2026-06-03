@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Goods, ShoppingCart, User, SwitchButton, Management } from '@element-plus/icons-vue'
+import { Goods, ShoppingCart, User, SwitchButton, Management, Plus } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/userStore'
 import { useCartStore } from '@/stores/cartStore'
 import { useCategoryStore } from '@/stores/categoryStore'
@@ -36,10 +36,12 @@ const logout = async () => {
       <el-menu mode="horizontal" :ellipsis="false" class="top-menu" router>
         <el-menu-item index="/home">首页</el-menu-item>
         <el-menu-item index="/category">全部商品</el-menu-item>
+        <el-menu-item index="/publish">发布闲置</el-menu-item>
         <el-menu-item index="/orders">我的订单</el-menu-item>
         <el-menu-item index="/address">收货地址</el-menu-item>
       </el-menu>
       <div class="header-actions">
+        <el-button type="primary" :icon="Plus" @click="router.push('/publish')">发布闲置</el-button>
         <el-button :icon="ShoppingCart" @click="router.push('/cart')">
           购物车 {{ cartCount }}
         </el-button>
