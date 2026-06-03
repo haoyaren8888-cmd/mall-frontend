@@ -5,6 +5,8 @@ export const getAdminProducts = params => request.get('/admin/products', { param
 export const createAdminProduct = data => request.post('/admin/products', data)
 export const updateAdminProduct = (id, data) => request.put(`/admin/products/${id}`, data)
 export const deleteAdminProduct = id => request.delete(`/admin/products/${id}`)
+export const approveAdminProduct = id => request.put(`/admin/products/${id}/approve`)
+export const rejectAdminProduct = (id, reason) => request.put(`/admin/products/${id}/reject`, null, { params: { reason } })
 export const onProduct = id => request.put(`/admin/products/${id}/on`)
 export const offProduct = id => request.put(`/admin/products/${id}/off`)
 export const getAdminCategories = () => request.get('/admin/categories')
