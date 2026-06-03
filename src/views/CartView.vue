@@ -22,15 +22,15 @@ const toggleAll = async checked => {
 
 const checkout = () => {
   if (!cartStore.displayItems.length) {
-    ElMessage.warning('购物车还是空的')
+    ElMessage.warning('意向清单还是空的')
     return
   }
   if (!selectedItems.value.length) {
-    ElMessage.warning('请先勾选商品')
+    ElMessage.warning('请先勾选想交易的闲置商品')
     return
   }
   if (selectedInvalidItems.value.length) {
-    ElMessage.warning('已选商品库存不足，请调整数量')
+    ElMessage.warning('已选闲置数量不足，请调整数量')
     return
   }
   if (!userStore.isLogin) {
@@ -46,8 +46,8 @@ onMounted(cartStore.load)
 <template>
   <div class="page">
     <div class="toolbar">
-      <h2 class="section-title">购物车</h2>
-      <span class="muted" v-if="!userStore.isLogin">未登录商品保存在本地，登录后会自动合并。</span>
+      <h2 class="section-title">意向清单</h2>
+      <span class="muted" v-if="!userStore.isLogin">未登录时会先保存在本地，登录后自动合并到账号。</span>
     </div>
     <section class="panel cart-panel">
       <CartItemRow
@@ -57,7 +57,7 @@ onMounted(cartStore.load)
         @update="cartStore.update"
         @remove="cartStore.remove"
       />
-      <el-empty v-if="!cartStore.displayItems.length" description="购物车为空" />
+      <el-empty v-if="!cartStore.displayItems.length" description="还没有加入意向清单" />
     </section>
     <section class="cart-summary panel">
       <div class="summary-left">
@@ -69,10 +69,10 @@ onMounted(cartStore.load)
         >
           全选
         </el-checkbox>
-        <span>已选 {{ selectedItems.length }} 件</span>
+        <span>已选 {{ selectedItems.length }} 件闲置</span>
       </div>
-      <strong>合计：<span class="price">￥{{ total.toFixed(2) }}</span></strong>
-      <el-button type="primary" size="large" @click="checkout">去结算</el-button>
+      <strong>预估合计：<span class="price">¥{{ total.toFixed(2) }}</span></strong>
+      <el-button type="primary" size="large" @click="checkout">确认交易</el-button>
     </section>
   </div>
 </template>

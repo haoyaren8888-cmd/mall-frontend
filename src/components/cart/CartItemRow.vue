@@ -15,17 +15,17 @@ defineEmits(['update', 'remove'])
     <img :src="item.productImage" :alt="item.productName" />
     <div class="info">
       <strong>{{ item.productName }}</strong>
-      <span class="muted">库存 {{ item.stock }}</span>
+      <span class="muted">可交易 {{ item.stock }} 件</span>
     </div>
-    <span class="price">￥{{ Number(item.price).toFixed(2) }}</span>
+    <span class="price">¥{{ Number(item.price).toFixed(2) }}</span>
     <el-input-number
       :model-value="item.quantity"
       :min="1"
       :max="item.stock || 999"
       @change="quantity => $emit('update', item, { quantity })"
     />
-    <span class="price">￥{{ Number(item.subtotal || item.price * item.quantity).toFixed(2) }}</span>
-    <el-button text type="danger" @click="$emit('remove', item)">删除</el-button>
+    <span class="price">¥{{ Number(item.subtotal || item.price * item.quantity).toFixed(2) }}</span>
+    <el-button text type="danger" @click="$emit('remove', item)">移除</el-button>
   </div>
 </template>
 
