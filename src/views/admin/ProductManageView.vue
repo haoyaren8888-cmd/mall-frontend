@@ -222,7 +222,7 @@ onMounted(async () => {
 <template>
   <div class="admin-page">
     <div class="toolbar">
-      <h2 class="section-title">商品管理</h2>
+      <h2 class="section-title">闲置商品管理</h2>
       <el-button type="primary" @click="openCreate">新增商品</el-button>
     </div>
 

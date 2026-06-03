@@ -13,9 +13,9 @@ const stats = ref({
 
 const cards = [
   { label: '用户总数', key: 'userCount', icon: User, color: '#2563eb' },
-  { label: '商品总数', key: 'productCount', icon: Box, color: '#059669' },
-  { label: '订单总数', key: 'orderCount', icon: Tickets, color: '#d97706' },
-  { label: '待处理订单', key: 'pendingOrderCount', icon: ShoppingCart, color: '#dc2626' }
+  { label: '闲置商品总数', key: 'productCount', icon: Box, color: '#059669' },
+  { label: '交易订单总数', key: 'orderCount', icon: Tickets, color: '#d97706' },
+  { label: '待处理交易', key: 'pendingOrderCount', icon: ShoppingCart, color: '#dc2626' }
 ]
 
 const load = async () => {
@@ -52,14 +52,14 @@ onMounted(load)
     <section class="panel admin-note">
       <h3>运营待办</h3>
       <el-timeline>
-        <el-timeline-item timestamp="商品管理">
-          维护商品价格、库存、图片与上下架状态。
+        <el-timeline-item timestamp="闲置商品审核">
+          审核学生发布的闲置商品，维护价格、图片、成色与上下架状态。
         </el-timeline-item>
-        <el-timeline-item timestamp="订单管理">
-          及时处理已支付订单，完成发货状态更新。
+        <el-timeline-item timestamp="交易交付">
+          及时处理已支付交易，完成校内交付状态更新。
         </el-timeline-item>
         <el-timeline-item timestamp="分类管理">
-          保持分类名称和排序清晰，方便用户筛选商品。
+          保持分类名称和排序清晰，方便同学筛选闲置商品。
         </el-timeline-item>
       </el-timeline>
     </section>
