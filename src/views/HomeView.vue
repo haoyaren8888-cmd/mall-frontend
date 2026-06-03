@@ -10,13 +10,25 @@ import { useCategoryStore } from '@/stores/categoryStore'
 const products = ref([])
 const loading = ref(false)
 const keyword = ref('')
+const campus = ref('')
+const conditionLevel = ref('')
 const cartStore = useCartStore()
 const categoryStore = useCategoryStore()
+
+const campusOptions = ['明向校区', '迎西校区', '虎峪校区']
+const conditionOptions = ['全新', '九成新', '八成新', '七成新']
 
 const loadProducts = async () => {
   loading.value = true
   try {
-    const page = await getProducts({ page: 1, size: 8, keyword: keyword.value })
+    const page = await getProducts({
+      page: 1,
+      size: 8,
+      keyword: keyword.value,
+      campus: campus.value,
+      conditionLevel: conditionLevel.value,
+      sort: 'newest'
+    })
     products.value = page?.records || []
   } catch {
     products.value = []
@@ -27,7 +39,7 @@ const loadProducts = async () => {
 
 const add = async product => {
   await cartStore.add(product, 1)
-  ElMessage.success('已加入购物车')
+  ElMessage.success('已加入意向清单')
 }
 
 onMounted(async () => {
@@ -41,11 +53,18 @@ onMounted(async () => {
 <template>
   <div class="page">
     <section class="home-hero">
-      <div>
-        <h1>综合网上购物商城</h1>
-        <p>核心商城流程：商品浏览、购物车、收货地址、下单、模拟支付。</p>
+      <div class="hero-copy">
+        <p class="eyebrow">太原理工大学校园跳蚤市场</p>
+        <h1>同校同学的闲置好物，在校区里当面交易</h1>
+        <p class="intro">教材、数码、宿舍小物和运动装备都在这里流转，先看成色和面交地点，再加入意向清单。</p>
         <div class="hero-search">
-          <el-input v-model="keyword" placeholder="搜索商品" :prefix-icon="Search" @keyup.enter="loadProducts" />
+          <el-input v-model="keyword" placeholder="搜教材、电脑、宿舍用品" :prefix-icon="Search" @keyup.enter="loadProducts" />
+          <el-select v-model="campus" clearable placeholder="校区">
+            <el-option v-for="item in campusOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="conditionLevel" clearable placeholder="成色">
+            <el-option v-for="item in conditionOptions" :key="item" :label="item" :value="item" />
+          </el-select>
           <el-button type="primary" @click="loadProducts">搜索</el-button>
         </div>
       </div>
@@ -59,7 +78,7 @@ onMounted(async () => {
 
     <section v-loading="loading">
       <div class="toolbar">
-        <h2 class="section-title">精选商品</h2>
+        <h2 class="section-title">最近上新</h2>
         <router-link to="/category">查看全部</router-link>
       </div>
       <ProductList :products="products" @add="add" />
@@ -69,7 +88,7 @@ onMounted(async () => {
 
 <style scoped>
 .home-hero {
-  min-height: 310px;
+  min-height: 330px;
   display: flex;
   align-items: center;
   margin-bottom: 22px;
@@ -77,26 +96,39 @@ onMounted(async () => {
   color: #fff;
   border-radius: 8px;
   background:
-    linear-gradient(90deg, rgba(17, 24, 39, .72), rgba(17, 24, 39, .18)),
-    url('https://images.unsplash.com/photo-1607082352121-fa243f3dde32?auto=format&fit=crop&w=1600&q=80') center / cover;
+    linear-gradient(90deg, rgba(22, 50, 42, .82), rgba(22, 50, 42, .24)),
+    url('https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1600&q=80') center / cover;
+}
+
+.hero-copy {
+  width: min(850px, 100%);
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 h1 {
   margin: 0 0 14px;
-  font-size: 42px;
+  max-width: 720px;
+  font-size: 40px;
+  line-height: 1.18;
   letter-spacing: 0;
 }
 
-.home-hero p {
+.intro {
   margin: 0 0 24px;
-  max-width: 560px;
+  max-width: 620px;
   line-height: 1.7;
-  font-size: 18px;
+  font-size: 17px;
 }
 
 .hero-search {
-  display: flex;
-  max-width: 520px;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 130px 120px auto;
+  max-width: 820px;
   gap: 10px;
 }
 
@@ -116,17 +148,29 @@ h1 {
   font-weight: 700;
 }
 
+@media (max-width: 860px) {
+  .hero-search {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 760px) {
   .home-hero {
     padding: 26px;
   }
 
   h1 {
-    font-size: 32px;
+    font-size: 30px;
   }
 
   .category-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .hero-search {
+    grid-template-columns: 1fr;
   }
 }
 </style>
