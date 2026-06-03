@@ -16,7 +16,7 @@ const logout = async () => {
 <template>
   <el-container class="admin-layout">
     <el-aside width="220px" class="admin-aside">
-      <div class="admin-logo">商城后台</div>
+      <div class="admin-logo">闲置商城后台</div>
       <el-menu
         router
         :default-active="route.path"
@@ -30,7 +30,7 @@ const logout = async () => {
         </el-menu-item>
         <el-menu-item index="/admin/products">
           <el-icon><Box /></el-icon>
-          <span>商品管理</span>
+          <span>闲置商品</span>
         </el-menu-item>
         <el-menu-item index="/admin/categories">
           <el-icon><FolderOpened /></el-icon>
@@ -38,7 +38,7 @@ const logout = async () => {
         </el-menu-item>
         <el-menu-item index="/admin/orders">
           <el-icon><List /></el-icon>
-          <span>订单管理</span>
+          <span>交易订单</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
@@ -46,7 +46,7 @@ const logout = async () => {
       <el-header class="admin-header">
         <span>{{ userStore.user?.nickname || '管理员' }}</span>
         <div>
-          <el-button @click="router.push('/home')">返回商城</el-button>
+          <el-button @click="router.push('/home')">返回前台</el-button>
           <el-button :icon="SwitchButton" @click="logout">退出</el-button>
         </div>
       </el-header>

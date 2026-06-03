@@ -29,8 +29,8 @@ const submit = async () => {
 <template>
   <div class="auth-page">
     <div class="auth-visual">
-      <h1>米乐商城</h1>
-      <p>商品浏览、购物车、下单和后台管理一条链路跑通。</p>
+      <h1>工大闲置商城</h1>
+      <p>同校同学发布闲置商品，按商城流程完成意向清单、确认交易和模拟支付。</p>
     </div>
     <el-card class="auth-card" shadow="never">
       <h2>账号登录</h2>
@@ -66,8 +66,8 @@ const submit = async () => {
   padding: 8vw;
   color: #fff;
   background:
-    linear-gradient(rgba(17, 24, 39, .42), rgba(17, 24, 39, .56)),
-    url('https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&w=1600&q=80') center / cover;
+    linear-gradient(rgba(22, 50, 42, .54), rgba(22, 50, 42, .64)),
+    url('https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1600&q=80') center / cover;
 }
 
 h1 {

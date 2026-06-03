@@ -11,8 +11,14 @@ const form = reactive({
   username: '',
   password: '',
   nickname: '',
-  phone: ''
+  phone: '',
+  studentNo: '',
+  campus: '明向校区',
+  college: '',
+  dormitory: ''
 })
+
+const campusOptions = ['明向校区', '迎西校区', '虎峪校区']
 
 const submit = async () => {
   await userStore.register(form)
@@ -38,6 +44,20 @@ const submit = async () => {
         <el-form-item label="手机号">
           <el-input v-model="form.phone" />
         </el-form-item>
+        <el-form-item label="学号">
+          <el-input v-model="form.studentNo" />
+        </el-form-item>
+        <el-form-item label="校区">
+          <el-select v-model="form.campus" class="full-select">
+            <el-option v-for="item in campusOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="学院">
+          <el-input v-model="form.college" />
+        </el-form-item>
+        <el-form-item label="宿舍">
+          <el-input v-model="form.dormitory" placeholder="例如 行知楼 3 号楼" />
+        </el-form-item>
         <el-button type="primary" class="full" @click="submit">注册</el-button>
       </el-form>
       <router-link to="/login">已有账号，去登录</router-link>
@@ -53,11 +73,11 @@ const submit = async () => {
   justify-content: center;
   background:
     linear-gradient(rgba(244, 247, 251, .9), rgba(244, 247, 251, .9)),
-    url('https://images.unsplash.com/photo-1607082350899-7e105aa886ae?auto=format&fit=crop&w=1600&q=80') center / cover;
+    url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80') center / cover;
 }
 
 .register-card {
-  width: min(420px, calc(100% - 32px));
+  width: min(460px, calc(100% - 32px));
   border-radius: 8px;
 }
 
@@ -68,5 +88,9 @@ h2 {
 .full {
   width: 100%;
   margin-bottom: 16px;
+}
+
+.full-select {
+  width: 100%;
 }
 </style>

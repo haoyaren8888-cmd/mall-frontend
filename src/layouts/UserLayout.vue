@@ -31,20 +31,20 @@ const logout = async () => {
     <div class="page header-inner">
       <router-link class="brand" to="/home">
         <el-icon><Goods /></el-icon>
-        <span>米乐商城</span>
+        <span>工大闲置商城</span>
       </router-link>
       <el-menu mode="horizontal" :ellipsis="false" class="top-menu" router>
         <el-menu-item index="/home">首页</el-menu-item>
-        <el-menu-item index="/category">全部商品</el-menu-item>
+        <el-menu-item index="/category">闲置商品</el-menu-item>
         <el-menu-item index="/publish">发布闲置</el-menu-item>
         <el-menu-item index="/my-products">我的发布</el-menu-item>
-        <el-menu-item index="/orders">我的订单</el-menu-item>
+        <el-menu-item index="/orders">交易记录</el-menu-item>
         <el-menu-item index="/address">收货地址</el-menu-item>
       </el-menu>
       <div class="header-actions">
         <el-button type="primary" :icon="Plus" @click="router.push('/publish')">发布闲置</el-button>
         <el-button :icon="ShoppingCart" @click="router.push('/cart')">
-          购物车 {{ cartCount }}
+          意向清单 {{ cartCount }}
         </el-button>
         <el-dropdown v-if="userStore.isLogin">
           <el-button :icon="User">
@@ -66,7 +66,7 @@ const logout = async () => {
   <main class="shop-main">
     <router-view />
   </main>
-  <footer class="shop-footer">综合网上购物商城 · 前后端分离课程设计</footer>
+  <footer class="shop-footer">太原理工大学校园跳蚤市场 · 保留商城交易主流程</footer>
 </template>
 
 <style scoped>
