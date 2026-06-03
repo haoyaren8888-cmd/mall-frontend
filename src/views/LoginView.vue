@@ -44,7 +44,7 @@ const submit = async () => {
         <el-button type="primary" class="full" @click="submit">登录</el-button>
       </el-form>
       <div class="auth-links">
-        <span class="muted">普通用户 user / 123456，管理员 admin / 123456</span>
+        <span class="muted">学生用户 user / 123456，管理员 admin / 123456</span>
         <router-link to="/register">注册新账号</router-link>
       </div>
     </el-card>
