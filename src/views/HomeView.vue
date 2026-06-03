@@ -16,6 +16,12 @@ const cartStore = useCartStore()
 const categoryStore = useCategoryStore()
 
 const campusOptions = ['明向校区', '迎西校区', '虎峪校区']
+const campusQuickOptions = [
+  { label: '全部校区', value: '' },
+  { label: '明向校区', value: '明向校区' },
+  { label: '迎西校区', value: '迎西校区' },
+  { label: '虎峪校区', value: '虎峪校区' }
+]
 const conditionOptions = ['全新', '九成新', '八成新', '七成新']
 
 const loadProducts = async () => {
@@ -40,6 +46,11 @@ const loadProducts = async () => {
 const add = async product => {
   await cartStore.add(product, 1)
   ElMessage.success('已加入意向清单')
+}
+
+const pickCampus = async value => {
+  campus.value = value
+  await loadProducts()
 }
 
 onMounted(async () => {
@@ -74,6 +85,18 @@ onMounted(async () => {
       <router-link v-for="category in categoryStore.tree" :key="category.id" :to="`/category/${category.id}`">
         {{ category.name }}
       </router-link>
+    </section>
+
+    <section class="campus-strip">
+      <button
+        v-for="item in campusQuickOptions"
+        :key="item.label"
+        type="button"
+        :class="{ active: campus === item.value }"
+        @click="pickCampus(item.value)"
+      >
+        {{ item.label }}
+      </button>
     </section>
 
     <section v-loading="loading">
@@ -146,6 +169,29 @@ h1 {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   font-weight: 700;
+}
+
+.campus-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: -12px 0 28px;
+}
+
+.campus-strip button {
+  height: 36px;
+  padding: 0 16px;
+  color: #374151;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 18px;
+  cursor: pointer;
+}
+
+.campus-strip button.active {
+  color: #fff;
+  background: #0f766e;
+  border-color: #0f766e;
 }
 
 @media (max-width: 860px) {
