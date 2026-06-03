@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ChatLineRound, Star } from '@element-plus/icons-vue'
+import { ChatLineRound, DocumentCopy, Star } from '@element-plus/icons-vue'
 import { getProductDetail } from '@/api/product'
 import { useCartStore } from '@/stores/cartStore'
 
@@ -28,6 +28,20 @@ const saveIntent = async goCart => {
   ElMessage.success('已加入意向清单')
   if (goCart) {
     router.push('/cart')
+  }
+}
+
+const copyTradePlace = async () => {
+  const place = product.value?.tradePlace
+  if (!place) {
+    ElMessage.warning('暂未填写面交地点')
+    return
+  }
+  try {
+    await navigator.clipboard.writeText(place)
+    ElMessage.success('已复制面交地点')
+  } catch {
+    ElMessage.warning('复制失败，请手动选择地点')
   }
 }
 
@@ -82,6 +96,7 @@ watch(() => route.params.id, load, { immediate: true })
           校园闲置交易建议在校内公共区域当面验货，确认成色和配件后再付款。
         </div>
         <div class="actions">
+          <el-button :icon="DocumentCopy" @click="copyTradePlace">复制面交地点</el-button>
           <el-button :icon="Star" :disabled="!canContact" @click="saveIntent(false)">加入意向清单</el-button>
           <el-button type="primary" :icon="ChatLineRound" :disabled="!canContact" @click="saveIntent(true)">
             去意向清单
