@@ -32,3 +32,6 @@ const normalizeProductParams = (params = {}) => {
 
 export const getProducts = params => request.get('/products', { params: normalizeProductParams(params) })
 export const getProductDetail = id => request.get(`/products/${id}`)
+export const publishProduct = data => request.post('/products', data)
+export const getMyProducts = params => request.get('/products/mine', { params: normalizeProductParams(params) })
+export const offShelfProduct = id => request.put(`/products/${id}/off-shelf`)
