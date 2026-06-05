@@ -16,6 +16,8 @@ const keyword = ref('')
 const sort = ref('newest')
 const campus = ref('')
 const conditionLevel = ref('')
+const minPrice = ref(null)
+const maxPrice = ref(null)
 const page = ref(1)
 const pageSize = 8
 const total = ref(0)
@@ -38,7 +40,18 @@ const activeCategory = () => {
   return Number.isFinite(id) ? id : null
 }
 
+const validPriceRange = () => {
+  if (minPrice.value !== null && maxPrice.value !== null && Number(minPrice.value) > Number(maxPrice.value)) {
+    ElMessage.warning('最低价不能大于最高价')
+    return false
+  }
+  return true
+}
+
 const loadProducts = async () => {
+  if (!validPriceRange()) {
+    return
+  }
   loading.value = true
   try {
     const result = await getProducts({
@@ -48,7 +61,9 @@ const loadProducts = async () => {
       keyword: keyword.value,
       sort: sort.value,
       campus: campus.value,
-      conditionLevel: conditionLevel.value
+      conditionLevel: conditionLevel.value,
+      minPrice: minPrice.value ?? undefined,
+      maxPrice: maxPrice.value ?? undefined
     })
     products.value = result?.records || []
     total.value = Number(result?.total || 0)
@@ -61,6 +76,17 @@ const loadProducts = async () => {
 }
 
 const searchProducts = () => {
+  page.value = 1
+  loadProducts()
+}
+
+const resetFilters = () => {
+  keyword.value = ''
+  sort.value = 'newest'
+  campus.value = ''
+  conditionLevel.value = ''
+  minPrice.value = null
+  maxPrice.value = null
   page.value = 1
   loadProducts()
 }
@@ -123,8 +149,28 @@ onMounted(async () => {
           <el-select v-model="conditionLevel" clearable placeholder="成色" class="filter-select" @change="searchProducts">
             <el-option v-for="item in conditionOptions" :key="item" :label="item" :value="item" />
           </el-select>
+          <div class="price-range">
+            <el-input-number
+              v-model="minPrice"
+              :min="0"
+              :precision="2"
+              :controls="false"
+              placeholder="最低价"
+              class="price-input"
+            />
+            <span>至</span>
+            <el-input-number
+              v-model="maxPrice"
+              :min="0"
+              :precision="2"
+              :controls="false"
+              placeholder="最高价"
+              class="price-input"
+            />
+          </div>
           <el-input v-model="keyword" placeholder="输入闲置名称" clearable @clear="searchProducts" @keyup.enter="searchProducts" />
           <el-button type="primary" @click="searchProducts">查询</el-button>
+          <el-button @click="resetFilters">重置</el-button>
         </div>
       </div>
       <ProductList :products="products" @add="add" />
@@ -181,6 +227,20 @@ onMounted(async () => {
   flex: 0 0 120px;
 }
 
+.price-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.price-range span {
+  color: #6b7280;
+}
+
+.price-input {
+  width: 96px;
+}
+
 .pagination {
   margin-top: 24px;
   justify-content: center;
@@ -193,13 +253,18 @@ onMounted(async () => {
 
   .search-box,
   .sort-select,
-  .filter-select {
+  .filter-select,
+  .price-range {
     width: 100%;
   }
 
   .sort-select,
   .filter-select {
     flex: 1 1 160px;
+  }
+
+  .price-input {
+    width: calc(50% - 16px);
   }
 }
 </style>
