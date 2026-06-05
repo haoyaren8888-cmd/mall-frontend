@@ -78,7 +78,7 @@ const loadFavoriteStatus = async id => {
   }
   try {
     const result = await getFavoriteStatus(id)
-    favorited.value = Boolean(result?.favorited)
+    favorited.value = typeof result === 'boolean' ? result : Boolean(result?.favorited)
   } catch {
     favorited.value = false
   }
