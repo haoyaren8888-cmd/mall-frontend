@@ -56,6 +56,23 @@ const pageTips = computed(() =>
 )
 const submitText = computed(() => (isEdit.value ? '保存并提交审核' : '提交审核'))
 const backPath = computed(() => (isEdit.value ? '/my-products' : '/category'))
+const previewImage = computed(() => String(form.coverImage || '').trim() || defaultCover)
+const previewName = computed(() => form.name.trim() || '待填写商品名称')
+const previewDescription = computed(() => form.description.trim() || '补充使用情况、配件和交易时间')
+const previewCategoryName = computed(() => categories.value.find(item => item.id === form.categoryId)?.name || '未选分类')
+const previewPrice = computed(() => Number(form.price || 0).toFixed(2))
+const previewOriginalPrice = computed(() => {
+  const value = Number(form.originalPrice || 0)
+  return value > 0 ? value.toFixed(2) : ''
+})
+const discountText = computed(() => {
+  const price = Number(form.price || 0)
+  const original = Number(form.originalPrice || 0)
+  if (price <= 0 || original <= 0 || price >= original) {
+    return ''
+  }
+  return `${Math.round((price / original) * 10)}折`
+})
 
 const fillForm = product => {
   Object.assign(form, {
@@ -189,7 +206,30 @@ onMounted(async () => {
       </div>
 
       <aside class="panel side-panel">
-        <h3>{{ isEdit ? '重新提交前检查' : '发布前检查' }}</h3>
+        <h3>发布预览</h3>
+        <div class="preview-card">
+          <img class="preview-cover" :src="previewImage" :alt="previewName" />
+          <div class="preview-body">
+            <div class="preview-tags">
+              <el-tag size="small" effect="plain">{{ previewCategoryName }}</el-tag>
+              <el-tag size="small" type="success" effect="plain">{{ form.conditionLevel }}</el-tag>
+            </div>
+            <strong class="preview-name">{{ previewName }}</strong>
+            <p class="preview-description">{{ previewDescription }}</p>
+            <div class="preview-price">
+              <span>¥{{ previewPrice }}</span>
+              <del v-if="previewOriginalPrice">¥{{ previewOriginalPrice }}</del>
+              <em v-if="discountText">{{ discountText }}</em>
+            </div>
+            <div class="preview-meta">
+              <span>{{ form.campus }}</span>
+              <span>{{ form.tradeType }}</span>
+              <span>{{ form.tradePlace || '待填写面交地点' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="check-title">{{ isEdit ? '重新提交前检查' : '发布前检查' }}</h3>
         <ul>
           <li>商品名称和分类要准确，方便同学搜索。</li>
           <li>转让价按实际成色填写，原价可作为参考。</li>
@@ -214,7 +254,7 @@ onMounted(async () => {
 
 .publish-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
+  grid-template-columns: minmax(0, 1fr) 320px;
   gap: 18px;
 }
 
@@ -241,6 +281,89 @@ onMounted(async () => {
 
 .side-panel h3 {
   margin: 0 0 12px;
+}
+
+.preview-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.preview-cover {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  display: block;
+  object-fit: cover;
+  background: #eef2f7;
+}
+
+.preview-body {
+  padding: 12px;
+}
+
+.preview-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.preview-name {
+  display: block;
+  color: #111827;
+  font-size: 16px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.preview-description {
+  margin: 8px 0 10px;
+  color: #64748b;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.preview-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.preview-price span {
+  color: #dc2626;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.preview-price del {
+  color: #94a3b8;
+}
+
+.preview-price em {
+  color: #047857;
+  font-style: normal;
+  font-size: 12px;
+}
+
+.preview-meta {
+  display: grid;
+  gap: 6px;
+  color: #475569;
+  font-size: 13px;
+}
+
+.preview-meta span {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #f8fafc;
+  overflow-wrap: anywhere;
+}
+
+.check-title {
+  margin-top: 18px !important;
 }
 
 .side-panel ul {
