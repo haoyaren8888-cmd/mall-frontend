@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { cancelOrder, getOrders } from '@/api/order'
+import { cancelOrder, finishOrder, getOrders } from '@/api/order'
 
 const router = useRouter()
 const orders = ref([])
@@ -29,6 +29,13 @@ const cancel = async order => {
   await ElMessageBox.confirm('确认取消这个待支付交易吗？', '取消交易', { type: 'warning' })
   await cancelOrder(order.orderNo)
   ElMessage.success('交易已取消')
+  await load()
+}
+
+const finish = async order => {
+  await ElMessageBox.confirm('确认已经完成这笔交易吗？', '确认完成', { type: 'warning' })
+  await finishOrder(order.orderNo)
+  ElMessage.success('交易已完成')
   await load()
 }
 
@@ -65,6 +72,7 @@ onMounted(load)
                 支付
               </el-button>
               <el-button v-if="row.status === 'PENDING_PAY'" text type="danger" @click="cancel(row)">取消</el-button>
+              <el-button v-if="row.status === 'SHIPPED'" text type="success" @click="finish(row)">确认完成</el-button>
             </div>
           </template>
         </el-table-column>

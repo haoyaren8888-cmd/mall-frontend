@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { cancelOrder, getOrderDetail } from '@/api/order'
+import { cancelOrder, finishOrder, getOrderDetail } from '@/api/order'
 
 const route = useRoute()
 const router = useRouter()
@@ -11,7 +11,7 @@ const order = ref(null)
 const statusMeta = {
   PENDING_PAY: { label: '待支付', type: 'warning', alertType: 'warning', tip: '交易已提交，完成支付后管理员会继续处理。' },
   PAID: { label: '已支付', type: 'success', alertType: 'success', tip: '交易已付款，等待管理员确认交付。' },
-  SHIPPED: { label: '已交付', type: 'primary', alertType: 'info', tip: '后台已标记交付，等待后续确认完成。' },
+  SHIPPED: { label: '已交付', type: 'primary', alertType: 'info', tip: '后台已标记交付，确认无误后可以完成交易。' },
   FINISHED: { label: '已完成', type: 'info', alertType: 'info', tip: '交易已经完成。' },
   CANCELED: { label: '已取消', type: 'danger', alertType: 'error', tip: '交易已经取消，不能继续支付。' }
 }
@@ -24,6 +24,7 @@ const currentStatus = computed(() => statusMeta[order.value?.status] || {
 })
 const canPay = computed(() => order.value?.status === 'PENDING_PAY')
 const canCancel = computed(() => order.value?.status === 'PENDING_PAY')
+const canFinish = computed(() => order.value?.status === 'SHIPPED')
 
 const load = async () => {
   order.value = await getOrderDetail(route.params.orderNo)
@@ -33,6 +34,13 @@ const cancel = async () => {
   await ElMessageBox.confirm('确认取消这个待支付交易吗？', '取消交易', { type: 'warning' })
   await cancelOrder(order.value.orderNo)
   ElMessage.success('交易已取消')
+  await load()
+}
+
+const finish = async () => {
+  await ElMessageBox.confirm('确认已经完成这笔交易吗？', '确认完成', { type: 'warning' })
+  await finishOrder(order.value.orderNo)
+  ElMessage.success('交易已完成')
   await load()
 }
 
@@ -65,6 +73,7 @@ onMounted(load)
       <el-button @click="router.push('/orders')">返回交易记录</el-button>
       <el-button v-if="canCancel" type="danger" plain @click="cancel">取消交易</el-button>
       <el-button v-if="canPay" type="primary" @click="router.push(`/pay/${order.orderNo}`)">去支付</el-button>
+      <el-button v-if="canFinish" type="success" @click="finish">确认完成</el-button>
     </div>
   </div>
 </template>
