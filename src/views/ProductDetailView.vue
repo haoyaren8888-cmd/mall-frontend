@@ -10,7 +10,8 @@ import {
   getFavoriteStatus,
   getProductDetail,
   getProductMessages,
-  getProductReviews
+  getProductReviews,
+  replyProductMessage
 } from '@/api/product'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/userStore'
@@ -30,6 +31,8 @@ const messageTotal = ref(0)
 const messagePage = ref(1)
 const messageSize = 5
 const messageContent = ref('')
+const replyDrafts = ref({})
+const replySubmittingId = ref(null)
 const reviewLoading = ref(false)
 const reviews = ref([])
 const reviewTotal = ref(0)
@@ -44,6 +47,7 @@ const isOwnProduct = computed(() => {
 const canContact = computed(() =>
   product.value?.status === 'ON' && product.value?.itemStatus === 'ON_SALE' && !isOwnProduct.value
 )
+const canReplyMessages = computed(() => userStore.isLogin && isOwnProduct.value)
 const favoriteIcon = computed(() => (favorited.value ? StarFilled : Star))
 
 const formatPrice = value => {
@@ -199,6 +203,27 @@ const submitMessage = async () => {
   }
 }
 
+const submitReply = async message => {
+  if (!product.value || replySubmittingId.value) {
+    return
+  }
+  const content = (replyDrafts.value[message.id] || '').trim()
+  if (!content) {
+    ElMessage.warning('请先输入回复内容')
+    return
+  }
+
+  replySubmittingId.value = message.id
+  try {
+    await replyProductMessage(product.value.id, message.id, { replyContent: content })
+    ElMessage.success('回复已发布')
+    replyDrafts.value[message.id] = ''
+    await loadMessages(product.value.id)
+  } finally {
+    replySubmittingId.value = null
+  }
+}
+
 const load = async id => {
   loading.value = true
   product.value = null
@@ -206,6 +231,8 @@ const load = async id => {
   messages.value = []
   messageTotal.value = 0
   messagePage.value = 1
+  replyDrafts.value = {}
+  replySubmittingId.value = null
   reviews.value = []
   reviewTotal.value = 0
   reviewPage.value = 1
@@ -309,6 +336,28 @@ watch(() => route.params.id, load, { immediate: true })
               <span>{{ message.campus || '校内' }} · {{ formatTime(message.createdAt) }}</span>
             </div>
             <div class="message-content">{{ message.content }}</div>
+            <div v-if="message.replyContent" class="seller-reply">
+              <span>卖家回复 · {{ formatTime(message.replyAt) }}</span>
+              <p>{{ message.replyContent }}</p>
+            </div>
+            <div v-else-if="canReplyMessages" class="reply-editor">
+              <el-input
+                v-model="replyDrafts[message.id]"
+                type="textarea"
+                :rows="2"
+                maxlength="300"
+                show-word-limit
+                placeholder="回复这条咨询"
+              />
+              <el-button
+                size="small"
+                type="primary"
+                :loading="replySubmittingId === message.id"
+                @click="submitReply(message)"
+              >
+                回复
+              </el-button>
+            </div>
           </div>
         </article>
         <el-empty v-if="!messageLoading && !messages.length" description="还没有同学留言咨询" />
@@ -533,6 +582,36 @@ dd {
   word-break: break-word;
 }
 
+.seller-reply {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  background: #f0fdf4;
+}
+
+.seller-reply span {
+  color: #166534;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.seller-reply p {
+  margin: 6px 0 0;
+  color: #14532d;
+}
+
+.reply-editor {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.reply-editor .el-input {
+  flex: 1;
+}
+
 .message-pagination {
   margin-top: 12px;
   justify-content: flex-end;
@@ -608,9 +687,14 @@ dd {
   .message-header,
   .message-editor-actions,
   .message-meta,
+  .reply-editor,
   .review-meta {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .reply-editor .el-button {
+    align-self: flex-end;
   }
 }
 </style>
