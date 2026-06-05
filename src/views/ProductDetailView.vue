@@ -3,7 +3,14 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ChatLineRound, DocumentCopy, Star, StarFilled } from '@element-plus/icons-vue'
-import { cancelFavoriteProduct, favoriteProduct, getFavoriteStatus, getProductDetail } from '@/api/product'
+import {
+  cancelFavoriteProduct,
+  createProductMessage,
+  favoriteProduct,
+  getFavoriteStatus,
+  getProductDetail,
+  getProductMessages
+} from '@/api/product'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/userStore'
 
@@ -15,6 +22,13 @@ const product = ref(null)
 const loading = ref(false)
 const favoriteLoading = ref(false)
 const favorited = ref(false)
+const messageLoading = ref(false)
+const messageSubmitting = ref(false)
+const messages = ref([])
+const messageTotal = ref(0)
+const messagePage = ref(1)
+const messageSize = 5
+const messageContent = ref('')
 
 const canContact = computed(() => product.value?.status === 'ON' && product.value?.itemStatus === 'ON_SALE')
 const favoriteIcon = computed(() => (favorited.value ? StarFilled : Star))
@@ -22,6 +36,13 @@ const favoriteIcon = computed(() => (favorited.value ? StarFilled : Star))
 const formatPrice = value => {
   const price = Number(value)
   return Number.isFinite(price) ? price.toFixed(2) : '0.00'
+}
+
+const formatTime = value => {
+  if (!value) {
+    return ''
+  }
+  return String(value).replace('T', ' ').slice(0, 16)
 }
 
 const saveIntent = async goCart => {
@@ -90,13 +111,66 @@ const toggleFavorite = async () => {
   }
 }
 
+const loadMessages = async id => {
+  if (!id) {
+    messages.value = []
+    messageTotal.value = 0
+    return
+  }
+  messageLoading.value = true
+  try {
+    const result = await getProductMessages(id, {
+      page: messagePage.value,
+      size: messageSize
+    })
+    messages.value = result?.records || []
+    messageTotal.value = Number(result?.total || 0)
+  } catch {
+    messages.value = []
+    messageTotal.value = 0
+  } finally {
+    messageLoading.value = false
+  }
+}
+
+const submitMessage = async () => {
+  if (!product.value || messageSubmitting.value) {
+    return
+  }
+  if (!userStore.isLogin) {
+    router.push({ path: '/login', query: { redirect: route.fullPath } })
+    return
+  }
+
+  const content = messageContent.value.trim()
+  if (!content) {
+    ElMessage.warning('请先输入咨询内容')
+    return
+  }
+
+  messageSubmitting.value = true
+  try {
+    await createProductMessage(product.value.id, { content })
+    ElMessage.success('留言已发布')
+    messageContent.value = ''
+    messagePage.value = 1
+    await loadMessages(product.value.id)
+  } finally {
+    messageSubmitting.value = false
+  }
+}
+
 const load = async id => {
   loading.value = true
   product.value = null
   favorited.value = false
+  messages.value = []
+  messageTotal.value = 0
+  messagePage.value = 1
   try {
     product.value = await getProductDetail(id)
     await loadFavoriteStatus(id)
+    await loadMessages(id)
   } catch {
     product.value = null
   } finally {
@@ -153,6 +227,57 @@ watch(() => route.params.id, load, { immediate: true })
           </el-button>
         </div>
       </div>
+    </section>
+    <section v-if="product" class="message-panel panel">
+      <div class="message-header">
+        <div>
+          <h2 class="section-title">留言咨询</h2>
+          <p class="muted">可以先问清楚成色、配件和面交时间，再决定是否加入意向清单。</p>
+        </div>
+        <el-button text type="primary" @click="loadMessages(product.id)">刷新留言</el-button>
+      </div>
+
+      <div class="message-editor">
+        <el-input
+          v-model="messageContent"
+          type="textarea"
+          :rows="3"
+          maxlength="300"
+          show-word-limit
+          placeholder="例如：可以今晚在图书馆门口看一下吗？配件是否齐全？"
+        />
+        <div class="message-editor-actions">
+          <span>{{ userStore.isLogin ? '以当前登录用户身份发布' : '登录后可以发布咨询' }}</span>
+          <el-button type="primary" :loading="messageSubmitting" @click="submitMessage">
+            发布咨询
+          </el-button>
+        </div>
+      </div>
+
+      <div v-loading="messageLoading" class="message-list">
+        <article v-for="message in messages" :key="message.id" class="message-item">
+          <div class="avatar">{{ (message.nickname || '同').slice(0, 1) }}</div>
+          <div class="message-body">
+            <div class="message-meta">
+              <strong>{{ message.nickname || '同学' }}</strong>
+              <span>{{ message.campus || '校内' }} · {{ formatTime(message.createdAt) }}</span>
+            </div>
+            <div class="message-content">{{ message.content }}</div>
+          </div>
+        </article>
+        <el-empty v-if="!messageLoading && !messages.length" description="还没有同学留言咨询" />
+      </div>
+
+      <el-pagination
+        v-if="messageTotal > messageSize"
+        class="message-pagination"
+        background
+        layout="prev, pager, next"
+        :total="messageTotal"
+        :page-size="messageSize"
+        v-model:current-page="messagePage"
+        @current-change="loadMessages(product.id)"
+      />
     </section>
     <el-empty v-else-if="!loading" description="闲置不存在或暂未通过审核" />
   </div>
@@ -243,6 +368,92 @@ dd {
   border-radius: 8px;
 }
 
+.message-panel {
+  margin-top: 20px;
+  padding: 24px;
+}
+
+.message-header,
+.message-editor-actions,
+.message-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.message-header p {
+  margin: 4px 0 0;
+}
+
+.message-editor {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.message-editor-actions {
+  margin-top: 12px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.message-list {
+  min-height: 120px;
+  margin-top: 18px;
+}
+
+.message-item {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.message-item:last-child {
+  border-bottom: 0;
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #166534;
+  font-weight: 800;
+  background: #dcfce7;
+}
+
+.message-body {
+  min-width: 0;
+}
+
+.message-meta strong {
+  color: #111827;
+}
+
+.message-meta span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.message-content {
+  margin-top: 8px;
+  color: #374151;
+  line-height: 1.7;
+  word-break: break-word;
+}
+
+.message-pagination {
+  margin-top: 12px;
+  justify-content: flex-end;
+}
+
 @media (max-width: 860px) {
   .detail-panel {
     grid-template-columns: 1fr;
@@ -256,6 +467,13 @@ dd {
 @media (max-width: 560px) {
   .trade-info {
     grid-template-columns: 1fr;
+  }
+
+  .message-header,
+  .message-editor-actions,
+  .message-meta {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 </style>

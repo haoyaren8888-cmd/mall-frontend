@@ -39,3 +39,5 @@ export const getFavoriteProducts = params => request.get('/products/favorites', 
 export const getFavoriteStatus = id => request.get(`/products/${id}/favorite`)
 export const favoriteProduct = id => request.post(`/products/${id}/favorite`)
 export const cancelFavoriteProduct = id => request.delete(`/products/${id}/favorite`)
+export const getProductMessages = (id, params) => request.get(`/products/${id}/messages`, { params })
+export const createProductMessage = (id, data) => request.post(`/products/${id}/messages`, data)
