@@ -136,8 +136,11 @@ onMounted(load)
         </el-table-column>
         <el-table-column prop="receiverSnapshot" label="买家联系信息" min-width="220" />
         <el-table-column prop="createdAt" label="提交时间" width="180" />
-        <el-table-column label="操作" width="120">
+        <el-table-column label="操作" width="170">
           <template #default="{ row }">
+            <el-button text type="primary" @click="router.push(`/sales-orders/${row.orderNo}`)">
+              详情
+            </el-button>
             <el-button v-if="row.status === 'PAID'" text type="success" @click="ship(row)">
               确认交付
             </el-button>
