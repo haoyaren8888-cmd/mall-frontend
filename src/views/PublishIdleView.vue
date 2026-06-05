@@ -1,13 +1,15 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { publishProduct } from '@/api/product'
+import { getMyProductDetail, publishProduct, updateProduct } from '@/api/product'
 import { useCategoryStore } from '@/stores/categoryStore'
 
 const router = useRouter()
+const route = useRoute()
 const categoryStore = useCategoryStore()
 const formRef = ref()
+const loading = ref(false)
 const saving = ref(false)
 
 const campusOptions = ['明向校区', '迎西校区', '虎峪校区']
@@ -41,17 +43,54 @@ const rules = {
 }
 
 const categories = computed(() => categoryStore.flat)
+const editingId = computed(() => {
+  const id = Number(route.params.id)
+  return Number.isFinite(id) && id > 0 ? id : null
+})
+const isEdit = computed(() => Boolean(editingId.value))
+const pageTitle = computed(() => (isEdit.value ? '编辑闲置商品' : '发布闲置商品'))
+const pageTips = computed(() =>
+  isEdit.value
+    ? '修改后会重新提交管理员审核，审核通过后再进入商品列表。'
+    : '保留商城商品信息，补充校区、成色和面交地点，审核通过后进入商品列表。'
+)
+const submitText = computed(() => (isEdit.value ? '保存并提交审核' : '提交审核'))
+const backPath = computed(() => (isEdit.value ? '/my-products' : '/category'))
+
+const fillForm = product => {
+  Object.assign(form, {
+    categoryId: product.categoryId ?? null,
+    name: product.name ?? '',
+    description: product.description ?? '',
+    price: Number(product.price ?? 0),
+    originalPrice: product.originalPrice === null || product.originalPrice === undefined
+      ? null
+      : Number(product.originalPrice),
+    stock: product.stock || 1,
+    coverImage: product.coverImage ?? '',
+    conditionLevel: product.conditionLevel ?? '九成新',
+    campus: product.campus ?? '明向校区',
+    tradePlace: product.tradePlace ?? '图书馆门口',
+    tradeType: product.tradeType ?? '线下面交'
+  })
+}
 
 const submit = async () => {
   await formRef.value?.validate()
   saving.value = true
   try {
-    await publishProduct({
+    const payload = {
       ...form,
       coverImage: form.coverImage || defaultCover,
       stock: form.stock || 1
-    })
-    ElMessage.success('发布成功，等待管理员审核')
+    }
+    if (isEdit.value) {
+      await updateProduct(editingId.value, payload)
+      ElMessage.success('修改已提交，等待管理员重新审核')
+    } else {
+      await publishProduct(payload)
+      ElMessage.success('发布成功，等待管理员审核')
+    }
     router.push('/my-products')
   } finally {
     saving.value = false
@@ -62,6 +101,16 @@ onMounted(async () => {
   if (!categoryStore.tree.length) {
     await categoryStore.load()
   }
+  if (!isEdit.value) {
+    return
+  }
+  loading.value = true
+  try {
+    const product = await getMyProductDetail(editingId.value)
+    fillForm(product)
+  } finally {
+    loading.value = false
+  }
 })
 </script>
 
@@ -69,14 +118,14 @@ onMounted(async () => {
   <div class="page publish-page">
     <div class="toolbar">
       <div>
-        <h2 class="section-title">发布闲置商品</h2>
-        <p class="muted">保留商城商品信息，补充校区、成色和面交地点，审核通过后进入商品列表。</p>
+        <h2 class="section-title">{{ pageTitle }}</h2>
+        <p class="muted">{{ pageTips }}</p>
       </div>
-      <el-button @click="router.push('/category')">返回列表</el-button>
+      <el-button @click="router.push(backPath)">{{ isEdit ? '返回我的发布' : '返回列表' }}</el-button>
     </div>
 
     <section class="publish-grid">
-      <div class="panel form-panel">
+      <div v-loading="loading" class="panel form-panel">
         <el-form ref="formRef" :model="form" :rules="rules" label-width="96px">
           <el-form-item label="商品分类" prop="categoryId">
             <el-select v-model="form.categoryId" filterable placeholder="请选择分类" class="form-wide">
@@ -133,14 +182,14 @@ onMounted(async () => {
             <el-input v-model="form.coverImage" maxlength="255" placeholder="不填则使用默认图片" />
           </el-form-item>
           <div class="form-actions">
-            <el-button @click="router.push('/category')">取消</el-button>
-            <el-button type="primary" :loading="saving" @click="submit">提交审核</el-button>
+            <el-button @click="router.push(backPath)">取消</el-button>
+            <el-button type="primary" :loading="saving" @click="submit">{{ submitText }}</el-button>
           </div>
         </el-form>
       </div>
 
       <aside class="panel side-panel">
-        <h3>发布前检查</h3>
+        <h3>{{ isEdit ? '重新提交前检查' : '发布前检查' }}</h3>
         <ul>
           <li>商品名称和分类要准确，方便同学搜索。</li>
           <li>转让价按实际成色填写，原价可作为参考。</li>

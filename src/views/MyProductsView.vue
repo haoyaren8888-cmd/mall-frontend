@@ -128,7 +128,7 @@ onMounted(load)
           </template>
         </el-table-column>
         <el-table-column prop="createdAt" label="发布时间" width="170" />
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column label="操作" width="210" fixed="right">
           <template #default="{ row }">
             <el-button
               text
@@ -137,6 +137,14 @@ onMounted(load)
               @click="router.push(`/product/${row.id}`)"
             >
               查看
+            </el-button>
+            <el-button
+              text
+              type="primary"
+              :disabled="row.itemStatus === 'SOLD'"
+              @click="router.push(`/my-products/${row.id}/edit`)"
+            >
+              编辑
             </el-button>
             <el-button
               text
