@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Goods, ShoppingCart, User, SwitchButton, Management, Plus } from '@element-plus/icons-vue'
+import { Goods, ShoppingCart, User, SwitchButton, Management, Plus, Star } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/userStore'
 import { useCartStore } from '@/stores/cartStore'
 import { useCategoryStore } from '@/stores/categoryStore'
@@ -38,6 +38,7 @@ const logout = async () => {
         <el-menu-item index="/category">闲置商品</el-menu-item>
         <el-menu-item index="/publish">发布闲置</el-menu-item>
         <el-menu-item index="/my-products">我的发布</el-menu-item>
+        <el-menu-item index="/favorites">我的收藏</el-menu-item>
         <el-menu-item index="/orders">交易记录</el-menu-item>
         <el-menu-item index="/address">联系地址</el-menu-item>
       </el-menu>
@@ -46,6 +47,7 @@ const logout = async () => {
         <el-button :icon="ShoppingCart" @click="router.push('/cart')">
           意向清单 {{ cartCount }}
         </el-button>
+        <el-button :icon="Star" @click="router.push('/favorites')">我的收藏</el-button>
         <el-dropdown v-if="userStore.isLogin">
           <el-button :icon="User">
             {{ userStore.user.nickname || userStore.user.username }}

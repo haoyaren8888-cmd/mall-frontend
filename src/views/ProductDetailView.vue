@@ -2,17 +2,22 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ChatLineRound, DocumentCopy, Star } from '@element-plus/icons-vue'
-import { getProductDetail } from '@/api/product'
+import { ChatLineRound, DocumentCopy, Star, StarFilled } from '@element-plus/icons-vue'
+import { cancelFavoriteProduct, favoriteProduct, getFavoriteStatus, getProductDetail } from '@/api/product'
 import { useCartStore } from '@/stores/cartStore'
+import { useUserStore } from '@/stores/userStore'
 
 const route = useRoute()
 const router = useRouter()
 const cartStore = useCartStore()
+const userStore = useUserStore()
 const product = ref(null)
 const loading = ref(false)
+const favoriteLoading = ref(false)
+const favorited = ref(false)
 
 const canContact = computed(() => product.value?.status === 'ON' && product.value?.itemStatus === 'ON_SALE')
+const favoriteIcon = computed(() => (favorited.value ? StarFilled : Star))
 
 const formatPrice = value => {
   const price = Number(value)
@@ -45,11 +50,53 @@ const copyTradePlace = async () => {
   }
 }
 
+const loadFavoriteStatus = async id => {
+  if (!userStore.isLogin) {
+    favorited.value = false
+    return
+  }
+  try {
+    const result = await getFavoriteStatus(id)
+    favorited.value = Boolean(result?.favorited)
+  } catch {
+    favorited.value = false
+  }
+}
+
+const toggleFavorite = async () => {
+  if (!product.value || favoriteLoading.value) {
+    return
+  }
+  if (!userStore.isLogin) {
+    router.push({ path: '/login', query: { redirect: route.fullPath } })
+    return
+  }
+
+  favoriteLoading.value = true
+  try {
+    if (favorited.value) {
+      await cancelFavoriteProduct(product.value.id)
+      favorited.value = false
+      product.value.favoriteCount = Math.max(Number(product.value.favoriteCount || 0) - 1, 0)
+      ElMessage.success('已取消收藏')
+    } else {
+      await favoriteProduct(product.value.id)
+      favorited.value = true
+      product.value.favoriteCount = Number(product.value.favoriteCount || 0) + 1
+      ElMessage.success('已收藏')
+    }
+  } finally {
+    favoriteLoading.value = false
+  }
+}
+
 const load = async id => {
   loading.value = true
   product.value = null
+  favorited.value = false
   try {
     product.value = await getProductDetail(id)
+    await loadFavoriteStatus(id)
   } catch {
     product.value = null
   } finally {
@@ -96,6 +143,9 @@ watch(() => route.params.id, load, { immediate: true })
           校园闲置交易建议在校内公共区域当面验货，确认成色和配件后再付款。
         </div>
         <div class="actions">
+          <el-button :icon="favoriteIcon" :loading="favoriteLoading" @click="toggleFavorite">
+            {{ favorited ? '取消收藏' : '收藏闲置' }}
+          </el-button>
           <el-button :icon="DocumentCopy" @click="copyTradePlace">复制面交地点</el-button>
           <el-button :icon="Star" :disabled="!canContact" @click="saveIntent(false)">加入意向清单</el-button>
           <el-button type="primary" :icon="ChatLineRound" :disabled="!canContact" @click="saveIntent(true)">
