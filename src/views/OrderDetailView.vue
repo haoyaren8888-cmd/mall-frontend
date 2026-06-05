@@ -3,10 +3,19 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { cancelOrder, finishOrder, getOrderDetail } from '@/api/order'
+import { createProductReview } from '@/api/product'
 
 const route = useRoute()
 const router = useRouter()
 const order = ref(null)
+const reviewDialogVisible = ref(false)
+const reviewSubmitting = ref(false)
+const reviewForm = ref({
+  productId: null,
+  productName: '',
+  rating: 5,
+  content: ''
+})
 
 const statusMeta = {
   PENDING_PAY: { label: '待支付', type: 'warning', alertType: 'warning', tip: '交易已提交，完成支付后管理员会继续处理。' },
@@ -25,6 +34,7 @@ const currentStatus = computed(() => statusMeta[order.value?.status] || {
 const canPay = computed(() => order.value?.status === 'PENDING_PAY')
 const canCancel = computed(() => order.value?.status === 'PENDING_PAY')
 const canFinish = computed(() => order.value?.status === 'SHIPPED')
+const canReview = computed(() => order.value?.status === 'FINISHED')
 
 const load = async () => {
   order.value = await getOrderDetail(route.params.orderNo)
@@ -42,6 +52,37 @@ const finish = async () => {
   await finishOrder(order.value.orderNo)
   ElMessage.success('交易已完成')
   await load()
+}
+
+const openReview = item => {
+  reviewForm.value = {
+    productId: item.productId,
+    productName: item.productName,
+    rating: 5,
+    content: ''
+  }
+  reviewDialogVisible.value = true
+}
+
+const submitReview = async () => {
+  const content = reviewForm.value.content.trim()
+  if (!content) {
+    ElMessage.warning('请先填写评价内容')
+    return
+  }
+
+  reviewSubmitting.value = true
+  try {
+    await createProductReview(reviewForm.value.productId, {
+      orderNo: order.value.orderNo,
+      rating: reviewForm.value.rating,
+      content
+    })
+    ElMessage.success('评价已提交')
+    reviewDialogVisible.value = false
+  } finally {
+    reviewSubmitting.value = false
+  }
 }
 
 onMounted(load)
@@ -67,6 +108,9 @@ onMounted(load)
         <span>{{ item.productName }}</span>
         <span>x {{ item.quantity }}</span>
         <span class="price">¥{{ Number(item.subtotal).toFixed(2) }}</span>
+        <el-button v-if="canReview" size="small" type="primary" plain @click="openReview(item)">
+          评价
+        </el-button>
       </div>
     </section>
     <div class="actions">
@@ -75,6 +119,24 @@ onMounted(load)
       <el-button v-if="canPay" type="primary" @click="router.push(`/pay/${order.orderNo}`)">去支付</el-button>
       <el-button v-if="canFinish" type="success" @click="finish">确认完成</el-button>
     </div>
+    <el-dialog v-model="reviewDialogVisible" title="评价交易商品" width="420px">
+      <div class="review-form">
+        <strong>{{ reviewForm.productName }}</strong>
+        <el-rate v-model="reviewForm.rating" />
+        <el-input
+          v-model="reviewForm.content"
+          type="textarea"
+          :rows="4"
+          maxlength="500"
+          show-word-limit
+          placeholder="写下商品成色、交付体验或沟通感受"
+        />
+      </div>
+      <template #footer>
+        <el-button @click="reviewDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="reviewSubmitting" @click="submitReview">提交评价</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -112,11 +174,15 @@ h2 {
 
 .order-item {
   display: grid;
-  grid-template-columns: 72px 1fr 80px 120px;
+  grid-template-columns: 72px 1fr 80px 120px 76px;
   align-items: center;
   gap: 16px;
   padding: 14px 0;
   border-bottom: 1px solid #edf0f5;
+}
+
+.order-item .el-button {
+  justify-self: end;
 }
 
 img {
@@ -130,6 +196,12 @@ img {
   display: flex;
   gap: 10px;
   margin-top: 18px;
+}
+
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 @media (max-width: 720px) {
