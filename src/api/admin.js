@@ -15,3 +15,5 @@ export const updateAdminCategory = (id, data) => request.put(`/admin/categories/
 export const deleteAdminCategory = id => request.delete(`/admin/categories/${id}`)
 export const getAdminOrders = params => request.get('/admin/orders', { params })
 export const shipOrder = orderNo => request.put(`/admin/orders/${orderNo}/ship`)
+export const getAdminUsers = params => request.get('/admin/users', { params })
+export const updateAdminUserStatus = (id, status) => request.put(`/admin/users/${id}/status`, null, { params: { status } })

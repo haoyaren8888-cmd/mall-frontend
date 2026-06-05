@@ -33,7 +33,8 @@ const routes = [
       { path: 'dashboard', component: () => import('@/views/admin/DashboardView.vue') },
       { path: 'products', component: () => import('@/views/admin/ProductManageView.vue') },
       { path: 'categories', component: () => import('@/views/admin/CategoryManageView.vue') },
-      { path: 'orders', component: () => import('@/views/admin/OrderManageView.vue') }
+      { path: 'orders', component: () => import('@/views/admin/OrderManageView.vue') },
+      { path: 'users', component: () => import('@/views/admin/UserManageView.vue') }
     ]
   }
 ]
