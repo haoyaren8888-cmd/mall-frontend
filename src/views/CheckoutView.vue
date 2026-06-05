@@ -2,7 +2,8 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getAddresses } from '@/api/address'
+import AddressFormDialog from '@/components/address/AddressFormDialog.vue'
+import { createAddress, getAddresses } from '@/api/address'
 import { createOrder } from '@/api/order'
 import { useCartStore } from '@/stores/cartStore'
 
@@ -10,6 +11,7 @@ const router = useRouter()
 const cartStore = useCartStore()
 const addresses = ref([])
 const selectedAddressId = ref(null)
+const addressDialogVisible = ref(false)
 
 const items = computed(() => cartStore.items.filter(item => item.checked))
 const total = computed(() => items.value.reduce((sum, item) => {
@@ -45,6 +47,18 @@ const submit = async () => {
   router.push(`/pay/${order.orderNo}`)
 }
 
+const openAddressDialog = () => {
+  addressDialogVisible.value = true
+}
+
+const saveAddress = async form => {
+  const address = await createAddress(form)
+  addressDialogVisible.value = false
+  ElMessage.success('联系地址已保存')
+  addresses.value = await getAddresses()
+  selectedAddressId.value = address.id
+}
+
 onMounted(load)
 </script>
 
@@ -72,7 +86,9 @@ onMounted(load)
           </span>
         </el-radio>
       </el-radio-group>
-      <el-empty v-if="!addresses.length" description="还没有联系地址" />
+      <el-empty v-if="!addresses.length" description="还没有联系地址">
+        <el-button type="primary" @click="openAddressDialog">新增联系地址</el-button>
+      </el-empty>
       <div v-else-if="selectedAddress" class="address-note">
         校内联系地址：{{ selectedAddress.province }}{{ selectedAddress.city }}{{ selectedAddress.district }}{{ selectedAddress.detail }}
       </div>
@@ -92,6 +108,7 @@ onMounted(load)
       <strong>交易金额：<span class="price">¥{{ total.toFixed(2) }}</span></strong>
       <el-button type="primary" size="large" @click="submit">提交交易订单</el-button>
     </section>
+    <AddressFormDialog v-model="addressDialogVisible" @submit="saveAddress" />
   </div>
 </template>
 
