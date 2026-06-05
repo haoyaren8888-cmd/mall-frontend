@@ -29,8 +29,9 @@ const submit = async () => {
 <template>
   <div class="auth-page">
     <div class="auth-visual">
-      <h1>工大闲置商城</h1>
-      <p>同校同学发布闲置商品，按商城流程完成意向清单、确认交易和模拟支付。</p>
+      <img src="/tyut-logo.svg" alt="太原理工大学" />
+      <h1>太原理工大学校园闲置商城</h1>
+      <p>明向、迎西、虎峪校区的教材、数码和宿舍小物在这里流转，同学之间就近沟通、当面交易。</p>
     </div>
     <el-card class="auth-card" shadow="never">
       <h2>账号登录</h2>
@@ -66,8 +67,16 @@ const submit = async () => {
   padding: 8vw;
   color: #fff;
   background:
-    linear-gradient(rgba(22, 50, 42, .54), rgba(22, 50, 42, .64)),
-    url('https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1600&q=80') center / cover;
+    linear-gradient(rgba(5, 34, 64, .44), rgba(5, 34, 64, .68)),
+    url('/tyut-campus-lake.svg') center / cover;
+}
+
+.auth-visual img {
+  width: 270px;
+  max-width: 70%;
+  margin-bottom: 28px;
+  border-radius: 6px;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, .22);
 }
 
 h1 {

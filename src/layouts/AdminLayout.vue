@@ -16,7 +16,10 @@ const logout = async () => {
 <template>
   <el-container class="admin-layout">
     <el-aside width="220px" class="admin-aside">
-      <div class="admin-logo">闲置商城后台</div>
+      <div class="admin-logo">
+        <img src="/tyut-logo.svg" alt="太原理工大学" />
+        <span>闲置商城后台</span>
+      </div>
       <el-menu
         router
         :default-active="route.path"
@@ -63,17 +66,30 @@ const logout = async () => {
 }
 
 .admin-aside {
-  background: #111827;
+  background:
+    linear-gradient(180deg, rgba(6, 37, 67, .96), rgba(17, 24, 39, .98)),
+    url('/tyut-campus-gate.svg') center bottom / 360px auto no-repeat;
 }
 
 .admin-logo {
-  height: 64px;
+  height: 82px;
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
   align-items: center;
-  padding-left: 22px;
+  padding: 12px 16px;
   color: #fff;
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 800;
+  border-bottom: 1px solid rgba(255, 255, 255, .1);
+}
+
+.admin-logo img {
+  width: 150px;
+  height: 36px;
+  border-radius: 4px;
+  object-fit: cover;
 }
 
 .admin-aside :deep(.el-menu) {

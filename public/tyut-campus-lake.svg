@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 760" role="img" aria-labelledby="title desc">
+  <title id="title">太原理工大学校园湖畔风景</title>
+  <desc id="desc">蓝天、湖水、传统屋顶建筑和荷叶组成的校园风景图</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6cb7f0"/>
+      <stop offset=".72" stop-color="#b9def4"/>
+      <stop offset="1" stop-color="#edf7fb"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8cc5d6"/>
+      <stop offset="1" stop-color="#336b68"/>
+    </linearGradient>
+    <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d7dbe2"/>
+      <stop offset="1" stop-color="#7b8792"/>
+    </linearGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#12335b" stop-opacity=".18"/>
+      <stop offset=".46" stop-color="#12335b" stop-opacity=".02"/>
+      <stop offset="1" stop-color="#12335b" stop-opacity=".16"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="760" fill="url(#sky)"/>
+  <rect y="410" width="1600" height="350" fill="url(#water)"/>
+  <path d="M0 520c170-38 282-14 409 8 181 32 358 28 511 1 204-36 400-32 680 5v226H0z" fill="#5f8f73" opacity=".45"/>
+  <g transform="translate(230 168)">
+    <rect x="170" y="78" width="780" height="210" rx="4" fill="#a13d2f"/>
+    <rect x="222" y="42" width="690" height="78" fill="#d59145"/>
+    <rect x="250" y="10" width="635" height="86" fill="#c97937"/>
+    <path d="M80 123c120-78 252-110 427-98 165 11 305 50 447 99-141 20-298 31-461 29-161-1-300-10-413-30z" fill="url(#roof)"/>
+    <path d="M78 123c123 42 270 54 427 55 155 0 310-17 450-54l26 35c-160 45-333 65-511 61-153-3-298-24-421-61z" fill="#6f7b85"/>
+    <rect x="170" y="165" width="780" height="18" fill="#1a4c86"/>
+    <g fill="#cb332b">
+      <rect x="220" y="190" width="24" height="98"/>
+      <rect x="320" y="190" width="24" height="98"/>
+      <rect x="420" y="190" width="24" height="98"/>
+      <rect x="520" y="190" width="24" height="98"/>
+      <rect x="620" y="190" width="24" height="98"/>
+      <rect x="720" y="190" width="24" height="98"/>
+      <rect x="820" y="190" width="24" height="98"/>
+    </g>
+    <rect x="120" y="288" width="880" height="58" fill="#f7f7f2"/>
+    <path d="M115 311h895" stroke="#c8ccd1" stroke-width="8"/>
+    <g fill="#8fa0ae">
+      <rect x="154" y="314" width="28" height="24"/>
+      <rect x="228" y="314" width="28" height="24"/>
+      <rect x="302" y="314" width="28" height="24"/>
+      <rect x="376" y="314" width="28" height="24"/>
+      <rect x="450" y="314" width="28" height="24"/>
+      <rect x="524" y="314" width="28" height="24"/>
+      <rect x="598" y="314" width="28" height="24"/>
+      <rect x="672" y="314" width="28" height="24"/>
+      <rect x="746" y="314" width="28" height="24"/>
+      <rect x="820" y="314" width="28" height="24"/>
+      <rect x="894" y="314" width="28" height="24"/>
+    </g>
+  </g>
+  <g transform="translate(230 484) scale(1 -0.45)" opacity=".34">
+    <rect x="400" y="78" width="780" height="210" rx="4" fill="#7d332f"/>
+    <path d="M310 123c120-78 252-110 427-98 165 11 305 50 447 99-141 20-298 31-461 29-161-1-300-10-413-30z" fill="#778794"/>
+    <rect x="350" y="288" width="880" height="58" fill="#cbd8d8"/>
+  </g>
+  <g fill="#517f45">
+    <ellipse cx="1160" cy="533" rx="46" ry="13"/>
+    <ellipse cx="1218" cy="552" rx="39" ry="12"/>
+    <ellipse cx="1278" cy="536" rx="47" ry="13"/>
+    <ellipse cx="1346" cy="558" rx="42" ry="12"/>
+    <ellipse cx="1404" cy="539" rx="50" ry="14"/>
+  </g>
+  <g stroke="#2f6b42" stroke-width="5" stroke-linecap="round" opacity=".85">
+    <path d="M25 742c48-103 67-212 67-335"/>
+    <path d="M88 741c30-86 41-170 36-251"/>
+    <path d="M1480 760c-43-119-61-238-54-356"/>
+    <path d="M1538 760c-35-91-46-177-34-257"/>
+  </g>
+  <g fill="#2f6b42" opacity=".72">
+    <path d="M45 238c57 58 84 119 81 183-72-39-103-99-81-183z"/>
+    <path d="M1478 302c-58 60-82 122-75 188 72-45 101-108 75-188z"/>
+  </g>
+  <rect width="1600" height="760" fill="url(#shade)"/>
+</svg>
