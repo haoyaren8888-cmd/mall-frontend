@@ -1,13 +1,28 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { cancelOrder, finishOrder, getOrders } from '@/api/order'
 
 const router = useRouter()
 const orders = ref([])
-const page = ref(1)
 const total = ref(0)
+const loading = ref(false)
+
+const query = reactive({
+  page: 1,
+  size: 10,
+  status: ''
+})
+
+const statusOptions = [
+  { label: '全部交易', value: '' },
+  { label: '待支付', value: 'PENDING_PAY' },
+  { label: '已支付', value: 'PAID' },
+  { label: '已交付', value: 'SHIPPED' },
+  { label: '已完成', value: 'FINISHED' },
+  { label: '已取消', value: 'CANCELED' }
+]
 
 const statusMap = {
   PENDING_PAY: { label: '待支付', type: 'warning', tip: '等待完成模拟支付' },
@@ -20,9 +35,28 @@ const statusMap = {
 const statusOf = status => statusMap[status] || { label: status, type: 'info', tip: '状态待确认' }
 
 const load = async () => {
-  const result = await getOrders({ page: page.value, size: 10 })
-  orders.value = result.records
-  total.value = result.total
+  loading.value = true
+  try {
+    const result = await getOrders({
+      page: query.page,
+      size: query.size,
+      status: query.status || undefined
+    })
+    orders.value = result.records || []
+    total.value = result.total || 0
+  } finally {
+    loading.value = false
+  }
+}
+
+const search = () => {
+  query.page = 1
+  load()
+}
+
+const reset = () => {
+  query.status = ''
+  search()
 }
 
 const cancel = async order => {
@@ -44,9 +78,22 @@ onMounted(load)
 
 <template>
   <div class="page">
-    <h2 class="section-title">交易记录</h2>
+    <div class="toolbar">
+      <div>
+        <h2 class="section-title">交易记录</h2>
+        <p class="muted">按交易状态查看待处理和已完成的校园交易。</p>
+      </div>
+      <el-button @click="load">刷新</el-button>
+    </div>
+    <section class="panel order-filter">
+      <el-select v-model="query.status" clearable placeholder="全部状态" class="status-select" @change="search">
+        <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
+      </el-select>
+      <el-button type="primary" @click="search">查询</el-button>
+      <el-button @click="reset">重置</el-button>
+    </section>
     <section class="panel">
-      <el-table :data="orders" empty-text="暂无交易记录">
+      <el-table v-loading="loading" :data="orders" empty-text="暂无交易记录">
         <el-table-column prop="orderNo" label="交易单号" min-width="180" />
         <el-table-column label="金额" width="120">
           <template #default="{ row }">
@@ -83,14 +130,30 @@ onMounted(load)
       background
       layout="prev, pager, next"
       :total="total"
-      :page-size="10"
-      v-model:current-page="page"
+      :page-size="query.size"
+      v-model:current-page="query.page"
       @current-change="load"
     />
   </div>
 </template>
 
 <style scoped>
+.toolbar p {
+  margin: 4px 0 0;
+}
+
+.order-filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  margin: 16px 0;
+}
+
+.status-select {
+  width: 180px;
+}
+
 .status-cell {
   display: flex;
   flex-direction: column;
@@ -113,5 +176,16 @@ onMounted(load)
 .pagination {
   margin-top: 18px;
   justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .order-filter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .status-select {
+    width: 100%;
+  }
 }
 </style>
