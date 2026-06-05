@@ -1,6 +1,6 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import { Box, FolderOpened, List, SwitchButton, Tickets, User as UserIcon } from '@element-plus/icons-vue'
+import { Box, ChatLineRound, FolderOpened, List, SwitchButton, Tickets, User as UserIcon } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/userStore'
 
 const router = useRouter()
@@ -43,6 +43,10 @@ const logout = async () => {
         <el-menu-item index="/admin/users">
           <el-icon><UserIcon /></el-icon>
           <span>用户管理</span>
+        </el-menu-item>
+        <el-menu-item index="/admin/reviews">
+          <el-icon><ChatLineRound /></el-icon>
+          <span>评价管理</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
