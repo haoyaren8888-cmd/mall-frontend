@@ -36,6 +36,11 @@ export const useUserStore = defineStore('userStore', {
       }
       return this.user
     },
+    async updateProfile(data) {
+      this.user = await authApi.updateProfile(data)
+      this.loaded = true
+      return this.user
+    },
     async ensureLoaded() {
       if (!this.loaded) {
         await this.fetchMe()

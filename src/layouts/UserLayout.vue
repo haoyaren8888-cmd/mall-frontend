@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Goods, ShoppingCart, User, SwitchButton, Management, Plus, Star } from '@element-plus/icons-vue'
+import { EditPen, Goods, ShoppingCart, User, SwitchButton, Management, Plus, Star } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/userStore'
 import { useCartStore } from '@/stores/cartStore'
 import { useCategoryStore } from '@/stores/categoryStore'
@@ -55,6 +55,7 @@ const logout = async () => {
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
+              <el-dropdown-item :icon="EditPen" @click="router.push('/profile')">个人资料</el-dropdown-item>
               <el-dropdown-item v-if="userStore.isAdmin" :icon="Management" @click="router.push('/admin/dashboard')">
                 后台管理
               </el-dropdown-item>
