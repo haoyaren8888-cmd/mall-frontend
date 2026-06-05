@@ -1,7 +1,8 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getSalesOrders } from '@/api/order'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getSalesOrders, shipSalesOrder } from '@/api/order'
 
 const router = useRouter()
 const orders = ref([])
@@ -25,7 +26,7 @@ const statusOptions = [
 
 const statusMap = {
   PENDING_PAY: { label: '待付款', type: 'warning', note: '买家尚未支付' },
-  PAID: { label: '已付款', type: 'success', note: '等待后台交付' },
+  PAID: { label: '已付款', type: 'success', note: '等待卖家交付' },
   SHIPPED: { label: '已交付', type: 'primary', note: '等待买家确认' },
   FINISHED: { label: '已完成', type: 'info', note: '交易已结束' },
   CANCELED: { label: '已取消', type: 'danger', note: '交易已取消' }
@@ -64,6 +65,13 @@ const search = () => {
 const reset = () => {
   query.status = ''
   search()
+}
+
+const ship = async order => {
+  await ElMessageBox.confirm('确认已经和买家完成交付吗？', '确认交付', { type: 'warning' })
+  await shipSalesOrder(order.orderNo)
+  ElMessage.success('已确认交付')
+  await load()
 }
 
 onMounted(load)
@@ -128,6 +136,14 @@ onMounted(load)
         </el-table-column>
         <el-table-column prop="receiverSnapshot" label="买家联系信息" min-width="220" />
         <el-table-column prop="createdAt" label="提交时间" width="180" />
+        <el-table-column label="操作" width="120">
+          <template #default="{ row }">
+            <el-button v-if="row.status === 'PAID'" text type="success" @click="ship(row)">
+              确认交付
+            </el-button>
+            <span v-else class="muted">-</span>
+          </template>
+        </el-table-column>
       </el-table>
     </section>
 
