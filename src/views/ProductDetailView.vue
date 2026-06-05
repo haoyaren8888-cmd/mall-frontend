@@ -30,7 +30,14 @@ const messagePage = ref(1)
 const messageSize = 5
 const messageContent = ref('')
 
-const canContact = computed(() => product.value?.status === 'ON' && product.value?.itemStatus === 'ON_SALE')
+const isOwnProduct = computed(() => {
+  const sellerId = product.value?.sellerId
+  const userId = userStore.user?.id
+  return sellerId !== undefined && sellerId !== null && userId !== undefined && Number(sellerId) === Number(userId)
+})
+const canContact = computed(() =>
+  product.value?.status === 'ON' && product.value?.itemStatus === 'ON_SALE' && !isOwnProduct.value
+)
 const favoriteIcon = computed(() => (favorited.value ? StarFilled : Star))
 
 const formatPrice = value => {
@@ -46,6 +53,10 @@ const formatTime = value => {
 }
 
 const saveIntent = async goCart => {
+  if (isOwnProduct.value) {
+    ElMessage.warning('不能购买自己发布的闲置商品')
+    return
+  }
   if (!canContact.value) {
     ElMessage.warning('这件闲置暂时不能交易')
     return
@@ -190,6 +201,7 @@ watch(() => route.params.id, load, { immediate: true })
           <el-tag type="success">{{ product.campus || '校内' }}</el-tag>
           <el-tag>{{ product.conditionLevel || '成色未填' }}</el-tag>
           <el-tag v-if="product.auditStatus === 'APPROVED'" type="info">已审核</el-tag>
+          <el-tag v-if="isOwnProduct" type="warning">我发布的商品</el-tag>
         </div>
         <h1>{{ product.name }}</h1>
         <p>{{ product.description }}</p>
@@ -214,7 +226,9 @@ watch(() => route.params.id, load, { immediate: true })
           </div>
         </dl>
         <div class="notice">
-          校园闲置交易建议在校内公共区域当面验货，确认成色和配件后再付款。
+          {{ isOwnProduct
+            ? '这是你自己发布的闲置商品，可以在“我的发布”里编辑信息或下架。'
+            : '校园闲置交易建议在校内公共区域当面验货，确认成色和配件后再付款。' }}
         </div>
         <div class="actions">
           <el-button :icon="favoriteIcon" :loading="favoriteLoading" @click="toggleFavorite">
