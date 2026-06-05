@@ -40,6 +40,7 @@ const routes = [
       { path: 'categories', component: () => import('@/views/admin/CategoryManageView.vue') },
       { path: 'orders', component: () => import('@/views/admin/OrderManageView.vue') },
       { path: 'users', component: () => import('@/views/admin/UserManageView.vue') },
+      { path: 'messages', component: () => import('@/views/admin/MessageManageView.vue') },
       { path: 'reviews', component: () => import('@/views/admin/ReviewManageView.vue') }
     ]
   }
