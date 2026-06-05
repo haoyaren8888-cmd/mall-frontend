@@ -22,6 +22,7 @@ const routes = [
       { path: 'checkout', component: () => import('@/views/CheckoutView.vue'), meta: { requiresAuth: true } },
       { path: 'pay/:orderNo', component: () => import('@/views/PayView.vue'), meta: { requiresAuth: true } },
       { path: 'orders', component: () => import('@/views/OrdersView.vue'), meta: { requiresAuth: true } },
+      { path: 'sales-orders', component: () => import('@/views/SalesOrdersView.vue'), meta: { requiresAuth: true } },
       { path: 'orders/:orderNo', component: () => import('@/views/OrderDetailView.vue'), meta: { requiresAuth: true } },
       { path: 'address', component: () => import('@/views/AddressView.vue'), meta: { requiresAuth: true } }
     ]
