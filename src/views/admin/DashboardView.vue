@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Box, ShoppingCart, Tickets, User } from '@element-plus/icons-vue'
+import { Box, ChatDotRound, ShoppingCart, Star, Tickets, User } from '@element-plus/icons-vue'
 import { getAdminStats } from '@/api/admin'
 
 const router = useRouter()
@@ -12,14 +12,26 @@ const stats = ref({
   disabledUserCount: 0,
   productCount: 0,
   orderCount: 0,
-  pendingOrderCount: 0
+  pendingOrderCount: 0,
+  messageCount: 0,
+  unrepliedMessageCount: 0,
+  reviewCount: 0,
+  hiddenContentCount: 0
 })
 
 const cards = [
   { label: '用户总数', key: 'userCount', icon: User, color: '#2563eb', route: '/admin/users' },
-  { label: '闲置商品总数', key: 'productCount', icon: Box, color: '#059669' },
-  { label: '交易订单总数', key: 'orderCount', icon: Tickets, color: '#d97706' },
-  { label: '待处理交易', key: 'pendingOrderCount', icon: ShoppingCart, color: '#dc2626' }
+  { label: '闲置商品总数', key: 'productCount', icon: Box, color: '#059669', route: '/admin/products' },
+  { label: '交易订单总数', key: 'orderCount', icon: Tickets, color: '#d97706', route: '/admin/orders' },
+  { label: '待支付订单', key: 'pendingOrderCount', icon: ShoppingCart, color: '#dc2626', route: '/admin/orders' },
+  { label: '留言咨询总数', key: 'messageCount', icon: ChatDotRound, color: '#7c3aed', route: '/admin/messages' },
+  { label: '成交评价总数', key: 'reviewCount', icon: Star, color: '#ca8a04', route: '/admin/reviews' }
+]
+
+const operationItems = [
+  { label: '未回复留言', key: 'unrepliedMessageCount', route: '/admin/messages', tone: 'warning' },
+  { label: '已隐藏内容', key: 'hiddenContentCount', route: '/admin/messages', tone: 'danger' },
+  { label: '待支付订单', key: 'pendingOrderCount', route: '/admin/orders', tone: 'primary' }
 ]
 
 const goCard = card => {
@@ -65,6 +77,26 @@ onMounted(load)
       </article>
     </section>
 
+    <section class="panel operation-status">
+      <div>
+        <h3>运营处理</h3>
+        <p class="muted">留言、评价和交易状态同步统计</p>
+      </div>
+      <div class="operation-items">
+        <button
+          v-for="item in operationItems"
+          :key="item.key"
+          type="button"
+          class="operation-box"
+          :class="item.tone"
+          @click="router.push(item.route)"
+        >
+          <span>{{ item.label }}</span>
+          <strong>{{ stats[item.key] || 0 }}</strong>
+        </button>
+      </div>
+    </section>
+
     <section class="panel user-status">
       <div>
         <h3>账号状态</h3>
@@ -91,6 +123,9 @@ onMounted(load)
         <el-timeline-item timestamp="交易交付">
           及时处理已支付交易，完成校内交付状态更新。
         </el-timeline-item>
+        <el-timeline-item timestamp="留言回复">
+          查看同学咨询，督促卖家及时回复并处理不合适内容。
+        </el-timeline-item>
         <el-timeline-item timestamp="分类管理">
           保持分类名称和排序清晰，方便同学筛选闲置商品。
         </el-timeline-item>
@@ -108,7 +143,7 @@ onMounted(load)
 
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -147,6 +182,7 @@ onMounted(load)
   color: #111827;
 }
 
+.operation-status,
 .user-status {
   display: flex;
   align-items: center;
@@ -155,19 +191,23 @@ onMounted(load)
   padding: 18px;
 }
 
+.operation-status h3,
 .user-status h3 {
   margin: 0 0 6px;
 }
 
+.operation-status p,
 .user-status p {
   margin: 0;
 }
 
+.operation-items,
 .user-status-items {
   display: flex;
   gap: 12px;
 }
 
+.operation-box,
 .status-box {
   min-width: 136px;
   padding: 12px 14px;
@@ -175,14 +215,39 @@ onMounted(load)
   border: 1px solid #e5e7eb;
 }
 
+.operation-box {
+  cursor: pointer;
+  background: #fff;
+  text-align: left;
+}
+
+.operation-box:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+}
+
+.operation-box span,
 .status-box span {
   display: block;
   margin-bottom: 6px;
   color: #6b7280;
 }
 
+.operation-box strong,
 .status-box strong {
   font-size: 24px;
+}
+
+.operation-box.primary strong {
+  color: #2563eb;
+}
+
+.operation-box.warning strong {
+  color: #d97706;
+}
+
+.operation-box.danger strong {
+  color: #dc2626;
 }
 
 .status-box.enabled strong {
@@ -205,6 +270,11 @@ onMounted(load)
   .metric-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .operation-status {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 620px) {
@@ -212,6 +282,7 @@ onMounted(load)
     grid-template-columns: 1fr;
   }
 
+  .operation-items,
   .user-status,
   .user-status-items {
     align-items: stretch;
