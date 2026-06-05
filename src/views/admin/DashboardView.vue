@@ -1,22 +1,32 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { Box, ShoppingCart, Tickets, User } from '@element-plus/icons-vue'
 import { getAdminStats } from '@/api/admin'
 
+const router = useRouter()
 const loading = ref(false)
 const stats = ref({
   userCount: 0,
+  enabledUserCount: 0,
+  disabledUserCount: 0,
   productCount: 0,
   orderCount: 0,
   pendingOrderCount: 0
 })
 
 const cards = [
-  { label: '用户总数', key: 'userCount', icon: User, color: '#2563eb' },
+  { label: '用户总数', key: 'userCount', icon: User, color: '#2563eb', route: '/admin/users' },
   { label: '闲置商品总数', key: 'productCount', icon: Box, color: '#059669' },
   { label: '交易订单总数', key: 'orderCount', icon: Tickets, color: '#d97706' },
   { label: '待处理交易', key: 'pendingOrderCount', icon: ShoppingCart, color: '#dc2626' }
 ]
+
+const goCard = card => {
+  if (card.route) {
+    router.push(card.route)
+  }
+}
 
 const load = async () => {
   loading.value = true
@@ -38,7 +48,13 @@ onMounted(load)
     </div>
 
     <section class="metric-grid">
-      <article v-for="card in cards" :key="card.key" class="panel metric-card">
+      <article
+        v-for="card in cards"
+        :key="card.key"
+        class="panel metric-card"
+        :class="{ 'is-link': card.route }"
+        @click="goCard(card)"
+      >
         <div class="metric-icon" :style="{ color: card.color, backgroundColor: `${card.color}14` }">
           <el-icon><component :is="card.icon" /></el-icon>
         </div>
@@ -47,6 +63,23 @@ onMounted(load)
           <strong>{{ stats[card.key] || 0 }}</strong>
         </div>
       </article>
+    </section>
+
+    <section class="panel user-status">
+      <div>
+        <h3>账号状态</h3>
+        <p class="muted">后台用户管理同步统计</p>
+      </div>
+      <div class="user-status-items">
+        <div class="status-box enabled">
+          <span>正常账号</span>
+          <strong>{{ stats.enabledUserCount || 0 }}</strong>
+        </div>
+        <div class="status-box disabled">
+          <span>禁用账号</span>
+          <strong>{{ stats.disabledUserCount || 0 }}</strong>
+        </div>
+      </div>
     </section>
 
     <section class="panel admin-note">
@@ -86,6 +119,15 @@ onMounted(load)
   padding: 18px;
 }
 
+.metric-card.is-link {
+  cursor: pointer;
+}
+
+.metric-card.is-link:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+}
+
 .metric-icon {
   width: 48px;
   height: 48px;
@@ -105,6 +147,52 @@ onMounted(load)
   color: #111827;
 }
 
+.user-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+}
+
+.user-status h3 {
+  margin: 0 0 6px;
+}
+
+.user-status p {
+  margin: 0;
+}
+
+.user-status-items {
+  display: flex;
+  gap: 12px;
+}
+
+.status-box {
+  min-width: 136px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.status-box span {
+  display: block;
+  margin-bottom: 6px;
+  color: #6b7280;
+}
+
+.status-box strong {
+  font-size: 24px;
+}
+
+.status-box.enabled strong {
+  color: #059669;
+}
+
+.status-box.disabled strong {
+  color: #dc2626;
+}
+
 .admin-note {
   padding: 18px;
 }
@@ -122,6 +210,12 @@ onMounted(load)
 @media (max-width: 620px) {
   .metric-grid {
     grid-template-columns: 1fr;
+  }
+
+  .user-status,
+  .user-status-items {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
 </style>
