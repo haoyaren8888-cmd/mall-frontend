@@ -35,6 +35,23 @@ const canPay = computed(() => order.value?.status === 'PENDING_PAY')
 const canCancel = computed(() => order.value?.status === 'PENDING_PAY')
 const canFinish = computed(() => order.value?.status === 'SHIPPED')
 const canReview = computed(() => order.value?.status === 'FINISHED')
+const progressSteps = [
+  { title: '提交交易', description: '生成交易单' },
+  { title: '完成支付', description: '等待交付' },
+  { title: '完成交付', description: '等待确认' },
+  { title: '交易完成', description: '可以评价' }
+]
+const progressActive = computed(() => {
+  const statusIndex = {
+    PENDING_PAY: 0,
+    PAID: 1,
+    SHIPPED: 2,
+    FINISHED: 3,
+    CANCELED: 0
+  }
+  return statusIndex[order.value?.status] ?? 0
+})
+const progressStatus = computed(() => (order.value?.status === 'CANCELED' ? 'error' : 'process'))
 
 const load = async () => {
   order.value = await getOrderDetail(route.params.orderNo)
@@ -96,6 +113,16 @@ onMounted(load)
         <p class="muted">交易单号：{{ order.orderNo }}</p>
         <p class="muted">{{ order.receiverSnapshot }}</p>
         <el-alert class="status-alert" :title="currentStatus.tip" :type="currentStatus.alertType" :closable="false" show-icon />
+        <div class="status-steps">
+          <el-steps :active="progressActive" :process-status="progressStatus" finish-status="success" align-center>
+            <el-step
+              v-for="step in progressSteps"
+              :key="step.title"
+              :title="step.title"
+              :description="step.description"
+            />
+          </el-steps>
+        </div>
       </div>
       <div class="summary">
         <el-tag size="large" :type="currentStatus.type">{{ currentStatus.label }}</el-tag>
@@ -158,6 +185,11 @@ h2 {
   margin-top: 14px;
 }
 
+.status-steps {
+  max-width: 640px;
+  margin-top: 22px;
+}
+
 .summary {
   min-width: 150px;
   text-align: right;
@@ -216,6 +248,11 @@ img {
 
   .order-item {
     grid-template-columns: 72px 1fr;
+  }
+
+  .status-steps {
+    overflow-x: auto;
+    padding-bottom: 4px;
   }
 }
 </style>
