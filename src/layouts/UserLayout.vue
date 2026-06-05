@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ShoppingCart, User, SwitchButton, Management, Plus } from '@element-plus/icons-vue'
+import { Goods, ShoppingCart, User, SwitchButton, Management, Plus } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/userStore'
 import { useCartStore } from '@/stores/cartStore'
 import { useCategoryStore } from '@/stores/categoryStore'
@@ -30,11 +30,8 @@ const logout = async () => {
   <el-header class="shop-header">
     <div class="page header-inner">
       <router-link class="brand" to="/home">
-        <img class="brand-logo" src="/tyut-logo.svg" alt="太原理工大学" />
-        <span class="brand-text">
-          <strong>太原理工大学</strong>
-          <small>校园闲置商城</small>
-        </span>
+        <el-icon><Goods /></el-icon>
+        <span>工大闲置商城</span>
       </router-link>
       <el-menu mode="horizontal" :ellipsis="false" class="top-menu" router>
         <el-menu-item index="/home">首页</el-menu-item>
@@ -69,12 +66,7 @@ const logout = async () => {
   <main class="shop-main">
     <router-view />
   </main>
-  <footer class="shop-footer">
-    <div class="page footer-inner">
-      <img src="/tyut-logo.svg" alt="太原理工大学" />
-      <span>太原理工大学校园跳蚤市场 · 明向、迎西、虎峪校区闲置交易</span>
-    </div>
-  </footer>
+  <footer class="shop-footer">太原理工大学校园跳蚤市场 · 保留商城交易主流程</footer>
 </template>
 
 <style scoped>
@@ -82,58 +74,32 @@ const logout = async () => {
   position: sticky;
   top: 0;
   z-index: 20;
-  height: 72px;
+  height: 64px;
   padding: 0;
-  background: rgba(255, 255, 255, .96);
-  border-top: 4px solid #063d70;
-  border-bottom: 1px solid #d7e1eb;
-  backdrop-filter: blur(10px);
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .header-inner {
   display: flex;
   align-items: center;
-  height: 68px;
+  height: 64px;
   gap: 20px;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 244px;
-  color: #063d70;
-}
-
-.brand-logo {
-  width: 92px;
-  height: 42px;
-  border-radius: 4px;
-  object-fit: cover;
-  box-shadow: 0 5px 14px rgba(6, 61, 112, .16);
-}
-
-.brand-text {
-  display: grid;
-  gap: 1px;
-  line-height: 1.1;
-}
-
-.brand-text strong {
-  font-size: 18px;
+  gap: 8px;
+  min-width: 130px;
+  color: #166534;
+  font-size: 20px;
   font-weight: 800;
-}
-
-.brand-text small {
-  color: #7b2d24;
-  font-size: 12px;
-  font-weight: 700;
 }
 
 .top-menu {
   flex: 1;
   border-bottom: 0;
-  background: transparent;
 }
 
 .header-actions {
@@ -143,32 +109,18 @@ const logout = async () => {
 }
 
 .shop-main {
-  min-height: calc(100vh - 132px);
+  min-height: calc(100vh - 112px);
   padding: 24px 0 36px;
 }
 
 .shop-footer {
-  min-height: 60px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #4b5563;
+  color: #6b7280;
   background: #fff;
-  border-top: 1px solid #d7e1eb;
-}
-
-.footer-inner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-}
-
-.footer-inner img {
-  width: 118px;
-  height: 30px;
-  border-radius: 3px;
-  object-fit: cover;
+  border-top: 1px solid #e5e7eb;
 }
 
 @media (max-width: 860px) {
@@ -178,30 +130,6 @@ const logout = async () => {
 
   .header-inner {
     justify-content: space-between;
-  }
-
-  .brand {
-    min-width: auto;
-  }
-}
-
-@media (max-width: 620px) {
-  .brand-logo {
-    width: 64px;
-    height: 34px;
-  }
-
-  .brand-text strong {
-    font-size: 15px;
-  }
-
-  .brand-text small,
-  .footer-inner img {
-    display: none;
-  }
-
-  .footer-inner {
-    text-align: center;
   }
 }
 </style>

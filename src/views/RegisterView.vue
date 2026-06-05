@@ -30,7 +30,6 @@ const submit = async () => {
 <template>
   <div class="register-page">
     <el-card class="register-card" shadow="never">
-      <img class="register-logo" src="/tyut-logo.svg" alt="太原理工大学" />
       <h2>注册账号</h2>
       <el-form :model="form" label-position="top">
         <el-form-item label="用户名">
@@ -73,22 +72,13 @@ const submit = async () => {
   align-items: center;
   justify-content: center;
   background:
-    linear-gradient(rgba(244, 247, 251, .84), rgba(244, 247, 251, .9)),
-    url('/tyut-campus-gate.svg') center / cover;
+    linear-gradient(rgba(244, 247, 251, .9), rgba(244, 247, 251, .9)),
+    url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80') center / cover;
 }
 
 .register-card {
   width: min(460px, calc(100% - 32px));
   border-radius: 8px;
-}
-
-.register-logo {
-  width: 210px;
-  height: 52px;
-  display: block;
-  margin-bottom: 18px;
-  border-radius: 5px;
-  object-fit: cover;
 }
 
 h2 {
