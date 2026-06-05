@@ -3,11 +3,13 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { cancelOrder, finishOrder, getOrderDetail } from '@/api/order'
+import { getPaymentRecord } from '@/api/payment'
 import { createProductReview } from '@/api/product'
 
 const route = useRoute()
 const router = useRouter()
 const order = ref(null)
+const paymentRecord = ref(null)
 const reviewDialogVisible = ref(false)
 const reviewSubmitting = ref(false)
 const reviewForm = ref({
@@ -52,9 +54,20 @@ const progressActive = computed(() => {
   return statusIndex[order.value?.status] ?? 0
 })
 const progressStatus = computed(() => (order.value?.status === 'CANCELED' ? 'error' : 'process'))
+const payTypeLabel = computed(() => {
+  if (!paymentRecord.value?.payType) {
+    return ''
+  }
+  return paymentRecord.value.payType === 'MOCK' ? '模拟支付' : paymentRecord.value.payType
+})
 
 const load = async () => {
   order.value = await getOrderDetail(route.params.orderNo)
+  if (['PAID', 'SHIPPED', 'FINISHED'].includes(order.value.status)) {
+    paymentRecord.value = await getPaymentRecord(order.value.orderNo)
+  } else {
+    paymentRecord.value = null
+  }
 }
 
 const cancel = async () => {
@@ -140,6 +153,30 @@ onMounted(load)
         </el-button>
       </div>
     </section>
+    <section v-if="paymentRecord" class="panel payment-info">
+      <div>
+        <h3>支付信息</h3>
+        <p class="muted">支付单号：{{ paymentRecord.payNo }}</p>
+      </div>
+      <div class="payment-grid">
+        <div>
+          <span>支付方式</span>
+          <strong>{{ payTypeLabel }}</strong>
+        </div>
+        <div>
+          <span>支付金额</span>
+          <strong class="price">¥{{ Number(paymentRecord.amount).toFixed(2) }}</strong>
+        </div>
+        <div>
+          <span>支付状态</span>
+          <strong>{{ paymentRecord.status === 'SUCCESS' ? '支付成功' : paymentRecord.status }}</strong>
+        </div>
+        <div>
+          <span>支付时间</span>
+          <strong>{{ paymentRecord.paidAt || '-' }}</strong>
+        </div>
+      </div>
+    </section>
     <div class="actions">
       <el-button @click="router.push('/orders')">返回交易记录</el-button>
       <el-button v-if="canCancel" type="danger" plain @click="cancel">取消交易</el-button>
@@ -204,6 +241,43 @@ h2 {
   padding: 8px 18px;
 }
 
+.payment-info {
+  padding: 18px;
+  margin-top: 16px;
+}
+
+.payment-info h3 {
+  margin: 0 0 8px;
+}
+
+.payment-info p {
+  margin: 0;
+}
+
+.payment-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.payment-grid div {
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.payment-grid span {
+  display: block;
+  margin-bottom: 6px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.payment-grid strong {
+  color: #111827;
+}
+
 .order-item {
   display: grid;
   grid-template-columns: 72px 1fr 80px 120px 76px;
@@ -248,6 +322,10 @@ img {
 
   .order-item {
     grid-template-columns: 72px 1fr;
+  }
+
+  .payment-grid {
+    grid-template-columns: 1fr;
   }
 
   .status-steps {
