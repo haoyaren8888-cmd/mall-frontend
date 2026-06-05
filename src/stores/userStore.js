@@ -41,6 +41,9 @@ export const useUserStore = defineStore('userStore', {
       this.loaded = true
       return this.user
     },
+    async updatePassword(data) {
+      await authApi.updatePassword(data)
+    },
     async ensureLoaded() {
       if (!this.loaded) {
         await this.fetchMe()

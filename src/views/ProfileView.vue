@@ -5,6 +5,7 @@ import { useUserStore } from '@/stores/userStore'
 
 const userStore = useUserStore()
 const submitting = ref(false)
+const passwordSubmitting = ref(false)
 const campusOptions = ['明向校区', '迎西校区', '虎峪校区']
 
 const form = reactive({
@@ -14,6 +15,12 @@ const form = reactive({
   campus: '',
   college: '',
   dormitory: ''
+})
+
+const passwordForm = reactive({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: ''
 })
 
 const fillForm = user => {
@@ -37,6 +44,39 @@ const submit = async () => {
 
 const reset = () => {
   fillForm(userStore.user)
+}
+
+const resetPasswordForm = () => {
+  passwordForm.oldPassword = ''
+  passwordForm.newPassword = ''
+  passwordForm.confirmPassword = ''
+}
+
+const submitPassword = async () => {
+  if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+    ElMessage.warning('请完整填写密码信息')
+    return
+  }
+  if (passwordForm.newPassword.length < 6) {
+    ElMessage.warning('新密码至少需要6位')
+    return
+  }
+  if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+    ElMessage.warning('两次输入的新密码不一致')
+    return
+  }
+
+  passwordSubmitting.value = true
+  try {
+    await userStore.updatePassword({
+      oldPassword: passwordForm.oldPassword,
+      newPassword: passwordForm.newPassword
+    })
+    ElMessage.success('密码已修改')
+    resetPasswordForm()
+  } finally {
+    passwordSubmitting.value = false
+  }
 }
 
 onMounted(async () => {
@@ -83,6 +123,30 @@ onMounted(async () => {
         <el-button type="primary" :loading="submitting" @click="submit">保存资料</el-button>
       </div>
     </section>
+
+    <section class="panel profile-panel">
+      <div class="password-head">
+        <div>
+          <h3>修改密码</h3>
+          <p class="muted">修改后请使用新密码重新登录其他设备。</p>
+        </div>
+      </div>
+      <el-form :model="passwordForm" label-position="top" class="password-form">
+        <el-form-item label="原密码">
+          <el-input v-model="passwordForm.oldPassword" type="password" show-password maxlength="30" />
+        </el-form-item>
+        <el-form-item label="新密码">
+          <el-input v-model="passwordForm.newPassword" type="password" show-password maxlength="30" />
+        </el-form-item>
+        <el-form-item label="确认新密码">
+          <el-input v-model="passwordForm.confirmPassword" type="password" show-password maxlength="30" />
+        </el-form-item>
+      </el-form>
+      <div class="actions">
+        <el-button @click="resetPasswordForm">清空</el-button>
+        <el-button type="primary" :loading="passwordSubmitting" @click="submitPassword">修改密码</el-button>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -105,14 +169,27 @@ h2 {
   margin: 0 0 8px;
 }
 
+h3 {
+  margin: 0 0 8px;
+}
+
 .profile-panel {
   padding: 22px;
 }
 
-.profile-form {
+.profile-form,
+.password-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 4px 18px;
+}
+
+.password-head {
+  margin-bottom: 14px;
+}
+
+.password-form {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .full-select {
@@ -134,6 +211,10 @@ h2 {
   }
 
   .profile-form {
+    grid-template-columns: 1fr;
+  }
+
+  .password-form {
     grid-template-columns: 1fr;
   }
 }
