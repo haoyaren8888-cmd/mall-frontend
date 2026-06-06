@@ -1,5 +1,13 @@
 import { defineStore } from 'pinia'
-import { addCartItem, deleteCartItem, getCart, mergeCart, updateCartChecked, updateCartItem } from '@/api/cart'
+import {
+  addCartItem,
+  deleteCartItem,
+  deleteCheckedCartItems,
+  getCart,
+  mergeCart,
+  updateCartChecked,
+  updateCartItem
+} from '@/api/cart'
 import { useUserStore } from './userStore'
 
 const LOCAL_KEY = 'mall-local-cart'
@@ -124,6 +132,16 @@ export const useCartStore = defineStore('cartStore', {
         return
       }
       this.localItems = this.localItems.filter(row => row.productId !== item.productId)
+      writeLocal(this.localItems)
+    },
+    async removeChecked() {
+      const userStore = useUserStore()
+      if (userStore.isLogin) {
+        await deleteCheckedCartItems()
+        await this.load()
+        return
+      }
+      this.localItems = normalizeLocalItems(this.localItems.filter(item => !item.checked))
       writeLocal(this.localItems)
     },
     async mergeLocalCart() {

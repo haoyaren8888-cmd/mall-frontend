@@ -1,7 +1,8 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { Delete } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import CartItemRow from '@/components/cart/CartItemRow.vue'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/userStore'
@@ -9,6 +10,7 @@ import { useUserStore } from '@/stores/userStore'
 const router = useRouter()
 const cartStore = useCartStore()
 const userStore = useUserStore()
+const removing = ref(false)
 
 const selectedItems = computed(() => cartStore.displayItems.filter(item => item.checked))
 const selectedInvalidItems = computed(() => selectedItems.value.filter(item => Number(item.quantity || 0) > Number(item.stock || 0)))
@@ -18,6 +20,29 @@ const total = computed(() => selectedItems.value.reduce((sum, item) => sum + Num
 
 const toggleAll = async checked => {
   await cartStore.checkAll(checked)
+}
+
+const removeChecked = async () => {
+  if (!selectedItems.value.length) {
+    ElMessage.warning('请先勾选要移除的闲置商品')
+    return
+  }
+  try {
+    await ElMessageBox.confirm(`确定移除已选的 ${selectedItems.value.length} 件闲置吗？`, '移除已选', {
+      type: 'warning',
+      confirmButtonText: '移除',
+      cancelButtonText: '取消'
+    })
+  } catch {
+    return
+  }
+  removing.value = true
+  try {
+    await cartStore.removeChecked()
+    ElMessage.success('已移除选中的闲置商品')
+  } finally {
+    removing.value = false
+  }
 }
 
 const checkout = () => {
@@ -70,6 +95,16 @@ onMounted(cartStore.load)
           全选
         </el-checkbox>
         <span>已选 {{ selectedItems.length }} 件闲置</span>
+        <el-button
+          text
+          type="danger"
+          :icon="Delete"
+          :loading="removing"
+          :disabled="!selectedItems.length"
+          @click="removeChecked"
+        >
+          移除已选
+        </el-button>
       </div>
       <strong>预估合计：<span class="price">¥{{ total.toFixed(2) }}</span></strong>
       <el-button type="primary" size="large" @click="checkout">确认交易</el-button>
@@ -94,6 +129,7 @@ onMounted(cartStore.load)
 .summary-left {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 18px;
 }
 
